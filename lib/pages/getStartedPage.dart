@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hoteldineflutter/pages/signup.dart';
 
 import 'log.dart';
 
@@ -20,7 +21,7 @@ class getStartedPage extends StatelessWidget{
               ElevatedButton(
                 onPressed: (){
                   Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => login()),
+                  MaterialPageRoute(builder: (context) => signup()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
