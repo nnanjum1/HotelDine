@@ -29,17 +29,20 @@ class signup extends StatelessWidget {
                 ), // <-- Added missing closing parenthesis here
 
 
-                Text(
-                  'Create your personal account now to access'
-                  'all the exclusive benefits we have to offer',
-                  style: TextStyle(
-                    fontSize: 18, // Text size
-                    fontWeight: FontWeight.normal, // Font weight
-                    color: Colors.black,
-                    // Text color
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0,bottom: 10),
+                  child: Text(
+                    'Create your personal account now to access all the exclusive benefits we have to offer',
+                    style: TextStyle(
+                      fontSize: 18, // Text size
+                      fontWeight: FontWeight.normal, // Font weight
+                      color: Colors.black, // Text color
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ), // <-- Added missing closing parenthesis here
+                ),
+
+
 
 
                 TextFormField(
