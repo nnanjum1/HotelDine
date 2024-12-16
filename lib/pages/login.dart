@@ -48,7 +48,7 @@ class _LoginState extends State<login> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const homepage()),
+          MaterialPageRoute(builder: (context) => const Homepage()),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -107,7 +107,7 @@ class _LoginState extends State<login> {
                           controller: emailAddress,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
-                            hintText: 'Email Address',
+                            hintText: 'Email address',
                             filled: true,
                             fillColor: const Color(0xFFDCDCDC),
                             border: OutlineInputBorder(
@@ -138,8 +138,8 @@ class _LoginState extends State<login> {
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(isPasswordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off),
+                                  ? Icons.visibility_off
+                                  : Icons.visibility),
                               onPressed: () {
                                 setState(() {
                                   isPasswordVisible = !isPasswordVisible;
