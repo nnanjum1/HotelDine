@@ -23,8 +23,14 @@ class _LoginState extends State<login> {
   final String adminEmail = "admin@gmail.com";
   final String adminPassword = "password";
 
+  String errorMessage = ''; // Error message state
+
   void loginUser() async {
     if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      errorMessage = ''; // Clear previous error message
+    });
 
     try {
       // Check if admin login
@@ -38,10 +44,23 @@ class _LoginState extends State<login> {
         );
       } else {
         // Normal user login with Firebase authentication
-        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailAddress.text,
           password: password.text,
         );
+
+        // Check if the user's email is verified
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null && !user.emailVerified) {
+          // If email is not verified, send a verification email and sign out
+          await user.sendEmailVerification();
+          setState(() {
+            errorMessage =
+            'Email not verified. A verification email has been sent to ${user.email}. Please verify your email and try again.';
+          });
+          FirebaseAuth.instance.signOut(); // Sign out the user
+          return;
+        }
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login successful')),
@@ -52,18 +71,19 @@ class _LoginState extends State<login> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage = '';
       if (e.code == 'user-not-found') {
-        errorMessage = 'No user found for that email.';
+        setState(() {
+          errorMessage = 'No user found for that email.';
+        });
       } else if (e.code == 'wrong-password') {
-        errorMessage = 'Wrong password provided for that user.';
+        setState(() {
+          errorMessage = 'Wrong credentials. Please try again.';
+        });
       } else {
-        errorMessage = e.message ?? 'An unexpected error occurred.';
+        setState(() {
+          errorMessage = 'An unexpected error occurred. Please try again.';
+        });
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
     }
   }
 
@@ -155,6 +175,20 @@ class _LoginState extends State<login> {
                             return null;
                           },
                         ),
+
+                        // Error message display
+                        if (errorMessage.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              errorMessage,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+
                         const SizedBox(height: 16),
 
                         // Remember Me and Forgot Password
@@ -191,7 +225,7 @@ class _LoginState extends State<login> {
                         ElevatedButton(
                           onPressed: loginUser,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF19A7FE),
+                            backgroundColor: const Color(0xFF19A7FE),
                             foregroundColor: Colors.white,
                             minimumSize: const Size(double.infinity, 50),
                             shape: RoundedRectangleBorder(

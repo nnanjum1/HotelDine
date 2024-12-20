@@ -21,6 +21,8 @@ class Signup extends StatelessWidget {
         final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: userEmail.text,
           password: userPassword.text,
+
+
         );
 
         if (credential.user != null) {
