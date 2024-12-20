@@ -70,7 +70,7 @@ class Homepage extends StatelessWidget {
                       width: 180,
                       height: 200,
                     ),
-                    SizedBox(width: 16), // Spacing between image and text column
+                    SizedBox(width: 8), // Spacing between image and text column
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -161,7 +161,7 @@ class Homepage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(width: 16), // Spacing between image and text column
+                    SizedBox(width: 8), // Spacing between image and text column
                     Image.asset(
                       "assets/images/restaurant.png",
                       width: 180,

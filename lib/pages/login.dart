@@ -70,6 +70,7 @@ class _LoginState extends State<login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Stack(
           children: [
@@ -190,11 +191,11 @@ class _LoginState extends State<login> {
                         ElevatedButton(
                           onPressed: loginUser,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Color(0xFF19A7FE),
                             foregroundColor: Colors.white,
                             minimumSize: const Size(double.infinity, 50),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
+                              borderRadius: BorderRadius.circular(26),
                             ),
                           ),
                           child: const Text(
