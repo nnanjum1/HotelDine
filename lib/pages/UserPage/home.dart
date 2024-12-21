@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatelessWidget {
@@ -5,6 +6,21 @@ class Homepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    // Initialize variables to hold user information
+    String? name = 'Guest';
+    String? emailAddress = 'No email';
+    String? profilePhoto;
+
+    if (user != null) {
+      for (final providerProfile in user.providerData) {
+        name = providerProfile.displayName ?? 'Guest';
+        emailAddress = providerProfile.email ?? 'No email';
+        profilePhoto = providerProfile.photoURL;
+      }
+    }
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -17,7 +33,7 @@ class Homepage extends StatelessWidget {
                 width: 452,
                 height: 296,
                 decoration: BoxDecoration(
-                  image: DecorationImage(
+                  image: const DecorationImage(
                     image: AssetImage('assets/images/welcome.png'),
                   ),
                 ),
@@ -26,23 +42,23 @@ class Homepage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(left: 48),
+                      padding: const EdgeInsets.only(left: 48),
                       child: Text(
-                        'Hey Mr/Mrs! ',
-                        style: TextStyle(
+                        'Hey Mr/Mrs! $emailAddress',
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           shadows: [
                             Shadow(
                               color: Colors.black,
-                              blurRadius: 4.0, // Blurring effect
-                              offset: Offset(0, 2), // Horizontal and vertical offsets
+                              blurRadius: 4.0,
+                              offset: Offset(0, 2),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    Padding(
+                    const Padding(
                       padding: EdgeInsets.only(left: 48),
                       child: Text(
                         'Discover your perfect place',
@@ -52,15 +68,15 @@ class Homepage extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 16),
-              Text(
+              const SizedBox(height: 16),
+              const Text(
                 "Choose your option",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -70,38 +86,38 @@ class Homepage extends StatelessWidget {
                       width: 180,
                       height: 200,
                     ),
-                    SizedBox(width: 8), // Spacing between image and text column
+                    const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Our Awesome Hotel',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8), // Add spacing between title and description
-                        Text(
+                        const SizedBox(height: 8),
+                        const Text(
                           'Experience luxurious comfort in\nour premium rooms with world-\nclass amenities. Whether you\'re\nhere for business or leisure,\nenjoy the perfect stay with\nexceptional service.',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.normal,
                           ),
                         ),
-                        SizedBox(height: 16), // Add spacing before the button
+                        const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
                             // Action for the button
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF19A7FE),
-                            padding: EdgeInsets.symmetric(horizontal: 47, vertical: 3),
+                            backgroundColor: const Color(0xFF19A7FE),
+                            padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(26),
                             ),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Explore Rooms',
                             style: TextStyle(
                               fontSize: 12,
@@ -115,7 +131,7 @@ class Homepage extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -123,34 +139,34 @@ class Homepage extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Our Restaurant',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8), // Add spacing between title and description
-                        Text(
-                          'Enjoy a variety of gourmet\ndishes, crafted by expert chefs.\nFrom local favorites to\'re\ninternational flavors, our\nrestaurant promises a dining\nexperience for every taste.',
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Enjoy a variety of gourmet\ndishes, crafted by expert chefs.\nFrom local favorites to\ninternational flavors, our\nrestaurant promises a dining\nexperience for every taste.',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.normal,
                           ),
                         ),
-                        SizedBox(height: 16), // Add spacing before the button
+                        const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
                             // Action for the button
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF19A7FE),
-                            padding: EdgeInsets.symmetric(horizontal: 47, vertical: 3),
+                            backgroundColor: const Color(0xFF19A7FE),
+                            padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(26),
                             ),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Explore Menu',
                             style: TextStyle(
                               fontSize: 12,
@@ -161,7 +177,7 @@ class Homepage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(width: 8), // Spacing between image and text column
+                    const SizedBox(width: 8),
                     Image.asset(
                       "assets/images/restaurant.png",
                       width: 180,

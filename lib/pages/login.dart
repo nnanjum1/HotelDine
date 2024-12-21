@@ -81,7 +81,7 @@ class _LoginState extends State<login> {
         });
       } else {
         setState(() {
-          errorMessage = 'An unexpected error occurred. Please try again.';
+          errorMessage = 'Wrong credentials. Please try again.';
         });
       }
     }
