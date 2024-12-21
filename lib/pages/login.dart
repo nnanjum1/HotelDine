@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart'; // Import admin page
-import 'package:hoteldineflutter/pages/UserPage/home.dart'; // Import home page
+import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart';
+import 'package:hoteldineflutter/pages/UserPage/home.dart';
 import 'package:hoteldineflutter/pages/signup.dart';
 
 class login extends StatefulWidget {
@@ -143,14 +143,14 @@ class _LoginState extends State<login> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
 
                         // Password TextFormField
                         TextFormField(
                           controller: password,
                           obscureText: !isPasswordVisible,
                           decoration: InputDecoration(
-                            hintText: 'Password',
+                            hintText: 'password',
                             filled: true,
                             fillColor: const Color(0xFFDCDCDC),
                             border: OutlineInputBorder(

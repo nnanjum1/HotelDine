@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hoteldineflutter/pages/getStartedPage.dart'; // Import your login page here
 
 class Homepage extends StatelessWidget {
   const Homepage({super.key});
@@ -25,168 +26,184 @@ class Homepage extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            children: [
-              Container(
-                width: 452,
-                height: 296,
-                decoration: BoxDecoration(
-                  image: const DecorationImage(
-                    image: AssetImage('assets/images/welcome.png'),
+        body: Padding(
+          padding: const EdgeInsets.all(15.0), // Add padding here
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  width: 452,
+                  height: 296,
+                  decoration: BoxDecoration(
+                    image: const DecorationImage(
+                      image: AssetImage('assets/images/welcome.png'),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 48),
+                        child: Text(
+                          'Hey Mr/Mrs! $emailAddress',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                color: Colors.white,
+                                blurRadius: 4.0,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.only(left: 48),
+                        child: Text(
+                          'Discover your perfect place',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 48),
-                      child: Text(
-                        'Hey Mr/Mrs! $emailAddress',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black,
-                              blurRadius: 4.0,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Choose your option",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // First option - Hotel image and button
+                SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        "assets/images/hotel.png",
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
                       ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(left: 48),
-                      child: Text(
-                        'Discover your perfect place',
-                        style: TextStyle(fontSize: 18),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Our Awesome Hotel',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Action for the button
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF19A7FE),
+                              padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(26),
+                              ),
+                              minimumSize: const Size(double.infinity, 36),
+                            ),
+                            child: const Text(
+                              'Explore Rooms',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Choose your option",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    Image.asset(
-                      "assets/images/hotel.png",
-                      width: 180,
-                      height: 200,
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Our Awesome Hotel',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Experience luxurious comfort in\nour premium rooms with world-\nclass amenities. Whether you\'re\nhere for business or leisure,\nenjoy the perfect stay with\nexceptional service.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Action for the button
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF19A7FE),
-                            padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(26),
-                            ),
-                          ),
-                          child: const Text(
-                            'Explore Rooms',
+                const SizedBox(height: 16),
+                // Second option - Restaurant image and button
+                SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        "assets/images/restaurant.png",
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Our Awesome Restaurant',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Action for the button
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF19A7FE),
+                              padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(26),
+                              ),
+                              minimumSize: const Size(double.infinity, 36),
+                            ),
+                            child: const Text(
+                              'Explore Menu',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Our Restaurant',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Enjoy a variety of gourmet\ndishes, crafted by expert chefs.\nFrom local favorites to\ninternational flavors, our\nrestaurant promises a dining\nexperience for every taste.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Action for the button
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF19A7FE),
-                            padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(26),
-                            ),
-                          ),
-                          child: const Text(
-                            'Explore Menu',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
+                const SizedBox(height: 16),
+                // Logout button
+                ElevatedButton(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => getStartedPage()), // Redirect to login page
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE70A0A),
+                    padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(26),
                     ),
-                    const SizedBox(width: 8),
-                    Image.asset(
-                      "assets/images/restaurant.png",
-                      width: 180,
-                      height: 200,
+                    minimumSize: const Size(double.infinity, 36),
+                  ),
+                  child: const Text(
+                    'Log out',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -2,69 +2,74 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
 
-class Signup extends StatelessWidget {
+class Signup extends StatefulWidget {
   const Signup({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
-    final fullNameControl = TextEditingController();
-    final userEmail = TextEditingController();
-    final phoneNumber = TextEditingController();
-    final dobController = TextEditingController();
-    final userPassword = TextEditingController();
-    final confirmPassword = TextEditingController();
+  _SignupState createState() => _SignupState();
+}
 
-    // Sign-up function
-    void signUp() async {
-      try {
-        final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: userEmail.text,
-          password: userPassword.text,
+class _SignupState extends State<Signup> {
+  final _formKey = GlobalKey<FormState>();
+  final fullNameControl = TextEditingController();
+  final userEmail = TextEditingController();
+  final phoneNumber = TextEditingController();
+  final dobController = TextEditingController();
+  final userPassword = TextEditingController();
+  final confirmPassword = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
+  // Sign-up function
+  void signUp() async {
+    try {
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: userEmail.text,
+        password: userPassword.text,
+      );
 
-        );
-
-        if (credential.user != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account created successfully')),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const login()),
-          );
-        }
-      } on FirebaseAuthException catch (e) {
-        String errorMessage = e.code == 'weak-password'
-            ? 'The password provided is too weak.'
-            : e.code == 'email-already-in-use'
-            ? 'The account already exists for that email.'
-            : e.message ?? 'An error occurred';
-
+      if (credential.user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
+          const SnackBar(content: Text('Account created successfully')),
         );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('An unexpected error occurred.')),
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const login()),
         );
       }
-    }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = e.code == 'weak-password'
+          ? 'The password provided is too weak.'
+          : e.code == 'email-already-in-use'
+          ? 'The account already exists for that email.'
+          : e.message ?? 'An error occurred';
 
-    InputDecoration customInputDecoration(String hint, IconData icon) {
-      return InputDecoration(
-        filled: true,
-        fillColor: Colors.grey[200],
-        hintText: hint,
-        prefixIcon: Icon(icon, color: Colors.grey),
-        hintStyle: const TextStyle(color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('An unexpected error occurred.')),
       );
     }
+  }
 
+  InputDecoration customInputDecoration(String hint, IconData icon) {
+    return InputDecoration(
+      filled: true,
+      fillColor: Colors.grey[200],
+      hintText: hint,
+      prefixIcon: Icon(icon, color: Colors.grey),
+      hintStyle: const TextStyle(color: Colors.grey),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -85,10 +90,9 @@ class Signup extends StatelessWidget {
             const Text(
               'Create your personal account now to access all the exclusive benefits we have to offer',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.black54),
+              style: TextStyle(fontSize: 14, color: Colors.black87),
             ),
             const SizedBox(height: 30),
-
             Form(
               key: _formKey,
               child: Column(
@@ -107,7 +111,8 @@ class Signup extends StatelessWidget {
                     controller: userEmail,
                     decoration: customInputDecoration('Email address', Icons.email),
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value ?? '')
+                    validator: (value) => !RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                        .hasMatch(value ?? '')
                         ? 'Please enter a valid email'
                         : null,
                   ),
@@ -118,8 +123,8 @@ class Signup extends StatelessWidget {
                     controller: phoneNumber,
                     decoration: customInputDecoration('Phone number', Icons.phone),
                     keyboardType: TextInputType.phone,
-                    validator: (value) =>
-                    !RegExp(r'^\d{11}$').hasMatch(value ?? '')
+                    validator: (value) => !RegExp(r'^\d{11}$')
+                        .hasMatch(value ?? '')
                         ? 'Please enter a valid 11-digit phone number'
                         : null,
                   ),
@@ -143,16 +148,54 @@ class Signup extends StatelessWidget {
                         "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
                       }
                     },
-                    validator: (value) =>
-                    value!.isEmpty ? 'Please select your date of birth' : null,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please select your date of birth';
+                      }
+
+                      // Calculate Age
+                      final dob = DateTime.tryParse(value);
+                      if (dob == null) {
+                        return 'Invalid date format';
+                      }
+
+                      final currentDate = DateTime.now();
+                      final age = currentDate.year -
+                          dob.year -
+                          (currentDate.isBefore(
+                              DateTime(currentDate.year, dob.month, dob.day))
+                              ? 1
+                              : 0);
+
+                      if (age < 18) {
+                        return 'You must be at least 18 years old';
+                      }
+
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
 
                   // Password
                   TextFormField(
                     controller: userPassword,
-                    decoration: customInputDecoration('Password', Icons.lock),
-                    obscureText: true,
+                    decoration: customInputDecoration('Password', Icons.lock)
+                        .copyWith(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                    ),
+                    obscureText: _obscurePassword,
                     validator: (value) =>
                     (value ?? '').length < 6 ? 'Password must be at least 6 characters' : null,
                   ),
@@ -161,10 +204,27 @@ class Signup extends StatelessWidget {
                   // Confirm Password
                   TextFormField(
                     controller: confirmPassword,
-                    decoration: customInputDecoration('Confirm password', Icons.lock),
-                    obscureText: true,
-                    validator: (value) =>
-                    value != userPassword.text ? 'Passwords do not match' : null,
+                    decoration:
+                    customInputDecoration('Confirm password', Icons.lock)
+                        .copyWith(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
+                    ),
+                    obscureText: _obscureConfirmPassword,
+                    validator: (value) => value != userPassword.text
+                        ? 'Passwords do not match'
+                        : null,
                   ),
                   const SizedBox(height: 30),
 
@@ -208,7 +268,9 @@ class Signup extends StatelessWidget {
                         child: const Text(
                           'Log in',
                           style: TextStyle(
-                              fontSize: 16, color: Colors.blue, fontWeight: FontWeight.bold),
+                              fontSize: 16,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
