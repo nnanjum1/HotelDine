@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'Database/database.dart';
 import 'login.dart';
 
 class Signup extends StatefulWidget {
@@ -23,15 +25,28 @@ class _SignupState extends State<Signup> {
   // Sign-up function
   void signUp() async {
     try {
+      // Firebase Authentication signup
       final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: userEmail.text,
         password: userPassword.text,
       );
 
       if (credential.user != null) {
+        // Appwrite: Insert user details into the "Users" collection
+        final userCollection = databaseService.getCollection('Users');
+        await userCollection['create'](
+          payload: {
+            'fullname': fullNameControl.text,
+            'email': userEmail.text,
+            'phone': phoneNumber.text,
+            'dob': dobController.text,
+          },
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account created successfully')),
         );
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const login()),
@@ -97,7 +112,6 @@ class _SignupState extends State<Signup> {
               key: _formKey,
               child: Column(
                 children: [
-                  // Full Name
                   TextFormField(
                     controller: fullNameControl,
                     decoration: customInputDecoration('Full name', Icons.person),
@@ -105,8 +119,6 @@ class _SignupState extends State<Signup> {
                     value!.isEmpty ? 'Please enter your full name' : null,
                   ),
                   const SizedBox(height: 16),
-
-                  // Email
                   TextFormField(
                     controller: userEmail,
                     decoration: customInputDecoration('Email address', Icons.email),
@@ -117,8 +129,6 @@ class _SignupState extends State<Signup> {
                         : null,
                   ),
                   const SizedBox(height: 16),
-
-                  // Phone Number
                   TextFormField(
                     controller: phoneNumber,
                     decoration: customInputDecoration('Phone number', Icons.phone),
@@ -129,8 +139,6 @@ class _SignupState extends State<Signup> {
                         : null,
                   ),
                   const SizedBox(height: 16),
-
-                  // Date of Birth
                   TextFormField(
                     controller: dobController,
                     decoration: customInputDecoration(
@@ -152,13 +160,10 @@ class _SignupState extends State<Signup> {
                       if (value!.isEmpty) {
                         return 'Please select your date of birth';
                       }
-
-                      // Calculate Age
                       final dob = DateTime.tryParse(value);
                       if (dob == null) {
                         return 'Invalid date format';
                       }
-
                       final currentDate = DateTime.now();
                       final age = currentDate.year -
                           dob.year -
@@ -166,17 +171,13 @@ class _SignupState extends State<Signup> {
                               DateTime(currentDate.year, dob.month, dob.day))
                               ? 1
                               : 0);
-
                       if (age < 18) {
                         return 'You must be at least 18 years old';
                       }
-
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-
-                  // Password
                   TextFormField(
                     controller: userPassword,
                     decoration: customInputDecoration('Password', Icons.lock)
@@ -196,12 +197,11 @@ class _SignupState extends State<Signup> {
                       ),
                     ),
                     obscureText: _obscurePassword,
-                    validator: (value) =>
-                    (value ?? '').length < 6 ? 'Password must be at least 6 characters' : null,
+                    validator: (value) => (value ?? '').length < 6
+                        ? 'Password must be at least 6 characters'
+                        : null,
                   ),
                   const SizedBox(height: 16),
-
-                  // Confirm Password
                   TextFormField(
                     controller: confirmPassword,
                     decoration:
@@ -227,8 +227,6 @@ class _SignupState extends State<Signup> {
                         : null,
                   ),
                   const SizedBox(height: 30),
-
-                  // Sign Up Button
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -251,8 +249,6 @@ class _SignupState extends State<Signup> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // Login Prompt
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

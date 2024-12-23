@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^3.8.1
   firebase_auth: ^5.3.4
+  appwrite: ^13.1.0
+  uuid: ^3.0.7
 
 dev_dependencies:
   flutter_test:
