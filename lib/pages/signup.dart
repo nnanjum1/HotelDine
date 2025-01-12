@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +28,7 @@ class _SignupState extends State<Signup> {
   void signUp() async {
     try {
       // Firebase Authentication signup
+
       final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: userEmail.text,
         password: userPassword.text,
@@ -36,7 +39,7 @@ class _SignupState extends State<Signup> {
         final userCollection = databaseService.getCollection('Users');
         await userCollection['create'](
           payload: {
-            'fullname': fullNameControl.text,
+            'fullName': fullNameControl.text,
             'email': userEmail.text,
             'phone': phoneNumber.text,
             'dob': dobController.text,
@@ -63,10 +66,14 @@ class _SignupState extends State<Signup> {
         SnackBar(content: Text(errorMessage)),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An unexpected error occurred.')),
+      // Log the error
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const login()),
       );
     }
+
+
   }
 
   InputDecoration customInputDecoration(String hint, IconData icon) {
