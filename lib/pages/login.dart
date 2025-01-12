@@ -41,6 +41,8 @@ class _LoginState extends State<login> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const adminPage()),
+
+
         );
       } else {
         // Normal user login with Firebase authentication
@@ -56,7 +58,7 @@ class _LoginState extends State<login> {
           await user.sendEmailVerification();
           setState(() {
             errorMessage =
-            'Email not verified. A verification email has been sent to ${user.email}. Please verify your email and try again.';
+            'A verification email has been sent to ${user.email}. Please verify your email and try again.';
           });
           FirebaseAuth.instance.signOut(); // Sign out the user
           return;

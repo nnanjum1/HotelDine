@@ -4,6 +4,14 @@
         android:label="hoteldineflutter"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <activity android:exported="true" android:name="com.linusu.flutter_web_auth_2.CallbackActivity" >
+            <intent-filter android:label="flutter_web_auth_2">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="appwrite-callback-676506150033480a87c5" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"
