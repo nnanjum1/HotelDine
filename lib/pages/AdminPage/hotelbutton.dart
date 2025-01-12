@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hoteldineflutter/pages/AdminPage/addroom.dart';
+import 'package:hoteldineflutter/pages/AdminPage/viewroom.dart';
+
+
 class HotelButton extends StatelessWidget {
   const HotelButton({super.key});
 
@@ -24,7 +28,10 @@ class HotelButton extends StatelessWidget {
           ),
 
           SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){},
+          ElevatedButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>  AddRoom()),
+            );
+          },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF19A7FE),
               padding: EdgeInsets.symmetric( vertical: 8),
@@ -39,7 +46,10 @@ class HotelButton extends StatelessWidget {
 
          SizedBox(height: 25),
           SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){},
+          ElevatedButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>  ViewRoom()),
+            );
+          },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF19A7FE),
               padding: EdgeInsets.symmetric( vertical: 8),
@@ -51,20 +61,7 @@ class HotelButton extends StatelessWidget {
 
           ),
           ),
-          SizedBox(height: 25),
-          SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF19A7FE),
-              padding: EdgeInsets.symmetric( vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text('Delete Room',style: TextStyle(fontSize: 14,color: Colors.white),),
 
-          ),
-          ),
 
           SizedBox(height: 25),
           SizedBox(width: 316,child:
@@ -105,7 +102,7 @@ class HotelButton extends StatelessWidget {
           items:[
 
             BottomNavigationBarItem(icon: Icon(Icons.home),label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.hotel_rounded),label: 'Hotel'),
+            BottomNavigationBarItem(icon: Icon(Icons.apartment),label: 'Hotel'),
             BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded),label: 'Restaurant')
           ]
       ),

@@ -192,7 +192,7 @@ class adminPage extends StatelessWidget {
                 items:[
 
               BottomNavigationBarItem(icon: Icon(Icons.home),label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.hotel_rounded),label: 'Hotel'),
+              BottomNavigationBarItem(icon: Icon(Icons.apartment),label: 'Hotel'),
               BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded),label: 'Restaurant')
             ]),
 
