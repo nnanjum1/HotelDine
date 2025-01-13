@@ -39,6 +39,7 @@ dependencies:
   firebase_auth: ^5.3.4
   appwrite: ^13.1.0
   uuid: ^3.0.7
+  image_picker: ^0.8.7+3
 
 dev_dependencies:
   flutter_test:
