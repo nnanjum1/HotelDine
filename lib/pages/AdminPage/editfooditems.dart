@@ -17,10 +17,17 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
 
   bool isLoading = true;
+  String? _selectedCategory;
+  final List<String> categories = [
+    'Platter',
+    'Drinks',
+    'Appetizers',
+    'Dessert',
+    'Beverages'
+  ];
 
   @override
   void initState() {
@@ -46,7 +53,8 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
       setState(() {
         _nameController.text = document.data['FoodItemName'];
         _descriptionController.text = document.data['Description'];
-        _categoryController.text = document.data['Category'];
+        _selectedCategory =
+            document.data['Category']; // Set the selected category
         _priceController.text = document.data['Price'].toString();
         isLoading = false;
       });
@@ -69,7 +77,7 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
         data: {
           'FoodItemName': _nameController.text,
           'Description': _descriptionController.text,
-          'Category': _categoryController.text,
+          'Category': _selectedCategory, // Pass selected category
           'Price': double.tryParse(_priceController.text) ?? 0.0,
         },
       );
@@ -118,7 +126,22 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
                   const Text('Category',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  TextField(controller: _categoryController),
+                  DropdownButton<String>(
+                    value: _selectedCategory,
+                    hint: const Text('Select Category'),
+                    isExpanded: true,
+                    items: categories.map((category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedCategory = newValue;
+                      });
+                    },
+                  ),
                   const SizedBox(height: 16),
                   const Text('Price',
                       style:
