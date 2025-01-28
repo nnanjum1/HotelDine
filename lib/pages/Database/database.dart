@@ -20,6 +20,12 @@ class DatabaseService {
       'Users',
       defaultValue: '67650e290037f19f628f',
     ),
+
+    // Room information:
+    'AddRoomContainer': const String.fromEnvironment(
+      'AddRoomContainer',
+      defaultValue: '6784c4dd00332fc62aeb',
+    ),
     // Add other collections as needed, e.g.:
     // 'Orders': const String.fromEnvironment('Orders', defaultValue: 'order_collection_id'),
   };
@@ -80,7 +86,7 @@ class DatabaseService {
         return await _databases.listDocuments(
           databaseId: databaseId,
           collectionId: collectionId,
-            // Pass the correctly typed queries
+          // Pass the correctly typed queries
         );
       }),
 
