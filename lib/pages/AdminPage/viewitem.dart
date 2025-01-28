@@ -24,7 +24,7 @@ class _ViewItemState extends State<ViewItem> {
     {
       'itemName': 'Orange Juice',
       'itemDescription': 'Made with fresh oranges',
-      'category': 'Drinks', // Fixed the category field name
+      'category': 'Fastfood', // Fixed the category field name
       'price': 300,
       'image': 'assets/images/room1.png',
     },
