@@ -66,23 +66,7 @@ class HotelButton extends StatelessWidget {
 
 
           SizedBox(height: 25),
-          SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){
-            //Navigator.push(context, MaterialPageRoute(builder: (context)=>  EditRoom()),);
-          },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF19A7FE),
-              padding: EdgeInsets.symmetric( vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text('Update Room',style: TextStyle(fontSize: 14,color: Colors.white),),
 
-          ),
-          ),
-
-          SizedBox(height: 25),
           SizedBox(width: 316,child:
           ElevatedButton(onPressed: (){},
             style: ElevatedButton.styleFrom(

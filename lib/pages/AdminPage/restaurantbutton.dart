@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hoteldineflutter/pages/AdminPage/additem.dart';
-import 'package:hoteldineflutter/pages/AdminPage/viewitem.dart';
+import 'package:hoteldineflutter/pages/AdminPage/resadditem.dart';
+import 'package:hoteldineflutter/pages/AdminPage/resviewitem.dart';
 
 class RestaurantButton extends StatelessWidget {
   const RestaurantButton({super.key});
@@ -60,37 +60,9 @@ class RestaurantButton extends StatelessWidget {
 
           ),
           ),
-          SizedBox(height: 25),
-          SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){
 
-          },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF19A7FE),
-              padding: EdgeInsets.symmetric( vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text('Delete Item',style: TextStyle(fontSize: 14,color: Colors.white),),
 
-          ),
-          ),
 
-          SizedBox(height: 25),
-          SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF19A7FE),
-              padding: EdgeInsets.symmetric( vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text('Update Item',style: TextStyle(fontSize: 14,color: Colors.white),),
-
-          ),
-          ),
 
           SizedBox(height: 25),
           SizedBox(width: 316,child:

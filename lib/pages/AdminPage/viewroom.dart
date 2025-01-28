@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:hoteldineflutter/pages/AdminPage/editroom.dart';
 import 'package:hoteldineflutter/pages/AdminPage/deleteroom.dart';
 
-
 class ViewRoom extends StatefulWidget {
   @override
   _ViewRoomState createState() => _ViewRoomState();
@@ -19,8 +18,7 @@ class _ViewRoomState extends State<ViewRoom> {
   bool isLoading = true; // Add this flag to track the loading state
   final String databaseId =
       '67650e170015d7a01bc8'; // Replace with your database ID
-  final String collectionId =
-      '6784c4dd00332fc62aeb';
+  final String collectionId = '6784c4dd00332fc62aeb';
 
   @override
   void initState() {
@@ -37,17 +35,16 @@ class _ViewRoomState extends State<ViewRoom> {
     storage = Storage(client);
   }
 
-
   void _filterRooms(String query) {
     setState(() {
       filteredRooms = query.isEmpty
           ? rooms
           : rooms.where((room) {
-        return room['category']
-            .toLowerCase()
-            .contains(query.toLowerCase()) ||
-            room['roomNumber'].toString().contains(query);
-      }).toList();
+              return room['category']
+                      .toLowerCase()
+                      .contains(query.toLowerCase()) ||
+                  room['roomNumber'].toString().contains(query);
+            }).toList();
     });
   }
 
@@ -81,6 +78,7 @@ class _ViewRoomState extends State<ViewRoom> {
       });
     }
   }
+
   Future<void> _reloadRooms() async {
     setState(() {
       isLoading = true; // Set loading state to true
@@ -92,20 +90,22 @@ class _ViewRoomState extends State<ViewRoom> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-        appBar: AppBar(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text('View Room'),
-    leading: IconButton(
-    icon: Icon(Icons.arrow_back),
-    onPressed: () {
-    Navigator.pop(context);
-    },
-    ),   actions: [
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
           IconButton(
             icon: Icon(Icons.refresh), // Reload icon
             onPressed: _reloadRooms, // Call reload function
           ),
         ],
-        ),
+      ),
       body: Column(
         children: [
           Padding(
@@ -131,10 +131,10 @@ class _ViewRoomState extends State<ViewRoom> {
                 final room = filteredRooms[index];
                 return Card(
                   color: Color(0xFFE9FBFF),
-                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15.0),
-
                   ),
                   elevation: 3,
                   child: Padding(
@@ -159,7 +159,6 @@ class _ViewRoomState extends State<ViewRoom> {
                                   ),
                                   Text(
                                     room['roomName'],
-
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -168,12 +167,13 @@ class _ViewRoomState extends State<ViewRoom> {
                                   Text(
                                     'Non-refundable',
                                     style: TextStyle(
-                                      fontSize: 12,fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
                                       color: Colors.grey[600],
                                     ),
                                   ),
-
-                                  Text(room['description'],
+                                  Text(
+                                    room['description'],
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey[600],
@@ -182,29 +182,59 @@ class _ViewRoomState extends State<ViewRoom> {
                                   SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Icon(Icons.free_breakfast, color: Colors.green,size: 16,), // Breakfast icon
-                                      SizedBox(width: 8), // Space between icon and text
-                                      Text('Breakfast included',style: TextStyle(fontSize: 12,
+                                      Icon(
+                                        Icons.free_breakfast,
                                         color: Colors.green,
-                                      ),),
+                                        size: 16,
+                                      ), // Breakfast icon
+                                      SizedBox(
+                                          width:
+                                              8), // Space between icon and text
+                                      Text(
+                                        'Breakfast included',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.green,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   Row(
                                     children: [
-                                      Icon(Icons.bathtub, color: Colors.green,size: 16,), // Bathroom icon
-                                      SizedBox(width: 8), // Space between icon and text
-                                      Text('Private Bathroom',style: TextStyle(fontSize: 12,
+                                      Icon(
+                                        Icons.bathtub,
                                         color: Colors.green,
-                                      ),),
+                                        size: 16,
+                                      ), // Bathroom icon
+                                      SizedBox(
+                                          width:
+                                              8), // Space between icon and text
+                                      Text(
+                                        'Private Bathroom',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.green,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   Row(
                                     children: [
-                                      Icon(Icons.wifi, color: Colors.green,size: 16,), // WiFi icon
-                                      SizedBox(width: 8), // Space between icon and text
-                                      Text('Free WiFi',style: TextStyle(fontSize: 12,
+                                      Icon(
+                                        Icons.wifi,
                                         color: Colors.green,
-                                      ),),
+                                        size: 16,
+                                      ), // WiFi icon
+                                      SizedBox(
+                                          width:
+                                              8), // Space between icon and text
+                                      Text(
+                                        'Free WiFi',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.green,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   SizedBox(height: 8),
@@ -215,7 +245,6 @@ class _ViewRoomState extends State<ViewRoom> {
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                     ),
-
                                   ),
                                   SizedBox(height: 8),
                                   Text(
@@ -225,7 +254,6 @@ class _ViewRoomState extends State<ViewRoom> {
                                       fontWeight: FontWeight.bold,
                                       color: Colors.blueAccent,
                                     ),
-
                                   ),
                                   Text(
                                     '*Price includes VAT and tax',
@@ -244,7 +272,8 @@ class _ViewRoomState extends State<ViewRoom> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     IconButton(
-                                      icon: Icon(Icons.edit, color: Colors.blue),
+                                      icon:
+                                          Icon(Icons.edit, color: Colors.blue),
                                       onPressed: () async {
                                         final result = await Navigator.push(
                                           context,
@@ -260,7 +289,8 @@ class _ViewRoomState extends State<ViewRoom> {
                                       },
                                     ),
                                     IconButton(
-                                      icon: Icon(Icons.delete, color: Colors.red),
+                                      icon:
+                                          Icon(Icons.delete, color: Colors.red),
                                       onPressed: () async {
                                         final result = await Navigator.push(
                                           context,
@@ -277,7 +307,6 @@ class _ViewRoomState extends State<ViewRoom> {
                                     ),
                                   ],
                                 ),
-
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(10.0),
                                   child: FutureBuilder<Uint8List>(
@@ -308,12 +337,10 @@ class _ViewRoomState extends State<ViewRoom> {
                                 ),
                               ],
                             )
-
                           ],
                         ),
                         // Image below the row
                         SizedBox(height: 8),
-
                       ],
                     ),
                   ),
