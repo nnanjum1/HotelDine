@@ -91,6 +91,7 @@ class _ViewRoomState extends State<ViewRoom> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text('View Room'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),

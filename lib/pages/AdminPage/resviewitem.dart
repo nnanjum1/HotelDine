@@ -96,7 +96,7 @@ class _ViewItemState extends State<ViewItem> {
       } else {
         filteredItems = items.where((item) {
           return item['category'].toLowerCase().contains(query.toLowerCase()) ||
-              item['itemName'].toString().contains(query);
+              item['itemName'].toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
     });
