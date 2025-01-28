@@ -28,7 +28,7 @@ class _ViewRoomState extends State<ViewRoom> {
       'roomNumber': 1103,
       'roomName': 'Double Bed Room',
       'description': 'Large size bed',
-      'category': 'Non-Air Conditioning',
+      'category': 'Non Air Conditioning',
       'price': 2800,
       'image': 'assets/images/room2.png',
     },
@@ -268,9 +268,29 @@ class _ViewRoomState extends State<ViewRoom> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => EditRoom(),
+                                        builder: (context) => EditRoom(
+                                          roomNumber: room['roomNumber'],
+                                          roomName: room['roomName'],
+                                          description: room['description'],
+                                          category: room['category'],
+                                          price: (room['price'] is int) ? (room['price'] as int).toDouble() : room['price'],
+                                          imagePath: room['image'],  // Ensure you pass the correct image path
+                                        ),
                                       ),
-                                    );
+                                    ).then((updatedRoom) {
+                                      if (updatedRoom != null) {
+                                        setState(() {
+                                          // Update the local data with the updated values
+                                          room['roomNumber'] = updatedRoom['roomNumber'];
+                                          room['roomName'] = updatedRoom['roomName'];
+                                          room['description'] = updatedRoom['description'];
+                                          room['category'] = updatedRoom['category'];
+                                          room['price'] = updatedRoom['price'];  // Ensure price is stored as a double
+                                          room['image'] = updatedRoom['imagePath'];  // Update the image path
+                                        });
+                                      }
+                                    });
+
                                   },
                                 ),
                                 IconButton(

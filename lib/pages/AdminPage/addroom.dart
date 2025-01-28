@@ -74,6 +74,7 @@ class _AddRoom extends State<AddRoom> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 hintText: 'Room number',
+                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
@@ -90,6 +91,7 @@ class _AddRoom extends State<AddRoom> {
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 hintText: 'Room name',
+                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
@@ -106,6 +108,7 @@ class _AddRoom extends State<AddRoom> {
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 hintText: 'Room description',
+                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
@@ -116,8 +119,8 @@ class _AddRoom extends State<AddRoom> {
             ),
             SizedBox(height: 12),
 
-            // Room Category
             DropdownButtonFormField<String>(
+              value: roomCategory.text.isNotEmpty ? roomCategory.text : null, // Set default value if roomCategory.text is not empty
               items: ['Air Conditioning', 'Non Air Conditioning']
                   .map((category) => DropdownMenuItem(
                 value: category,
@@ -125,10 +128,13 @@ class _AddRoom extends State<AddRoom> {
               ))
                   .toList(),
               onChanged: (value) {
-                roomCategory.text = value ?? '';
+                setState(() {
+                  roomCategory.text = value ?? ''; // Ensure the value is set correctly
+                });
               },
               decoration: InputDecoration(
                 hintText: 'Room category',
+                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
@@ -137,6 +143,7 @@ class _AddRoom extends State<AddRoom> {
                 ),
               ),
             ),
+
             SizedBox(height: 12),
 
             // Room Price
@@ -145,6 +152,7 @@ class _AddRoom extends State<AddRoom> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 hintText: 'Room price',
+                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 border: OutlineInputBorder(

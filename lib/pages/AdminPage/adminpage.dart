@@ -78,7 +78,7 @@ class adminPage extends StatelessWidget {
                   height: 30, // Set desired height
                   child: ElevatedButton(
                     onPressed: () {
-                     Navigator.push(context, MaterialPageRoute(builder: (context)=> HotelButton()),);
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> HotelButton()),);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
@@ -191,10 +191,10 @@ class adminPage extends StatelessWidget {
 
                 items:[
 
-              BottomNavigationBarItem(icon: Icon(Icons.home),label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.apartment),label: 'Hotel'),
-              BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded),label: 'Restaurant')
-            ]),
+                  BottomNavigationBarItem(icon: Icon(Icons.home),label: 'Home'),
+                  BottomNavigationBarItem(icon: Icon(Icons.apartment),label: 'Hotel'),
+                  BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded),label: 'Restaurant')
+                ]),
 
           ],
         ),

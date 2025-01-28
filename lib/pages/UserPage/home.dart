@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Database/database.dart';
+import 'package:hoteldineflutter/pages/UserPage/chooseroom.dart';
+
 
 class Homepage extends StatelessWidget {
   const Homepage({super.key});
@@ -113,8 +115,9 @@ class Homepage extends StatelessWidget {
                       children: [
                         Image.asset(
                           "assets/images/hotel.png",
-                          height: 200,
-                          fit: BoxFit.cover,
+                          width: 386,
+                          height: 186,
+
                         ),
                         const SizedBox(height: 8),
                         const Text(
@@ -127,7 +130,10 @@ class Homepage extends StatelessWidget {
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
-                            // Add your hotel navigation logic here
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ChooseRoom()),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF19A7FE),
@@ -139,15 +145,26 @@ class Homepage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(26),
                             ),
                           ),
-                          child: const Text(
-                            "Explore Rooms",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Explore Rooms",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(width: 8), // Add spacing between text and icon
+                              Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                              ),
+                            ],
                           ),
                         ),
+
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -157,8 +174,9 @@ class Homepage extends StatelessWidget {
                       children: [
                         Image.asset(
                           "assets/images/restaurant.png",
-                          height: 200,
-                          fit: BoxFit.cover,
+                          width: 386,
+                          height: 186,
+
                         ),
                         const SizedBox(height: 8),
                         const Text(
@@ -171,7 +189,7 @@ class Homepage extends StatelessWidget {
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
-                            // Add your restaurant navigation logic here
+
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF19A7FE),
@@ -183,15 +201,26 @@ class Homepage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(26),
                             ),
                           ),
-                          child: const Text(
-                            "Explore Menu",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Explore Menu",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(width: 8), // Add spacing between text and icon
+                              Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                              ),
+                            ],
                           ),
                         ),
+
                       ],
                     ),
                     const SizedBox(height: 16),
