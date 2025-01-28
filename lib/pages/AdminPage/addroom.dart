@@ -260,8 +260,7 @@ class _AddRoom extends State<AddRoom> {
                     ? DecorationImage(
                   image: FileImage(_image!),
                   fit: BoxFit.cover,
-                )
-                    : null,
+                ): null,
               ),
             ),
             SizedBox(height: 24),
