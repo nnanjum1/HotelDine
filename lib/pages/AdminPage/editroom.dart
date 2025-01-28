@@ -1,251 +1,170 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
-import 'package:hoteldineflutter/pages/Database/appwriteConfig.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:appwrite/appwrite.dart'; // Import Appwrite SDK
+import 'package:appwrite/models.dart'; // For Appwrite models
 
-import '../Database/appwriteConfig.dart';
 class EditRoom extends StatefulWidget {
-  final Map<String, dynamic> roomData; // Pass the room data as a map
+  final String roomNumber; // Declare roomNumber as a final variable
 
-  EditRoom({required this.roomData, required roomNumber, required roomName, required description, required category, required price});
+  EditRoom({required this.roomNumber}); // Accept roomNumber in the constructor
 
   @override
-  State<EditRoom> createState() => _EditRoom();
+  _EditRoomState createState() => _EditRoomState();
 }
 
-
-
-class _EditRoom extends State<EditRoom> {
-  late TextEditingController roomNumber;
-  late TextEditingController roomName;
-  late TextEditingController roomDescription;
-  late TextEditingController roomCategory;
-  late TextEditingController roomPrice;
+class _EditRoomState extends State<EditRoom> {
   late Databases databases;
-  File? _image;
-  final ImagePicker _picker = ImagePicker();
-
-  void initializeAppwrite() {
-    // Initialize Appwrite Client
-    Client client = Client();
-    client
-        .setEndpoint('https://cloud.appwrite.io/v1') // Your Appwrite endpoint
-        .setProject('676506150033480a87c5'); // Your Appwrite project ID
-    databases = Databases(client);
-    storage = Storage(client);
-  }
-  late Client client;
-  late Databases database;
   late Storage storage;
+  late Client client;
 
+  final String databaseId = '67650e170015d7a01bc8'; // Your database ID
+  final String collectionId = '6784c4dd00332fc62aeb'; // Your collection ID
 
+  Map<String, dynamic>? roomData; // To hold room details
+  bool isLoading = true; // Flag to track loading state
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize Appwrite Client
-    client = Client()
-      ..setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-      ..setProject('676506150033480a87c5'); // Replace with your Appwrite project ID
-
-    database = Databases(client);
-    storage = Storage(client);
-
-    // Initialize controllers with existing room data
-    roomNumber = TextEditingController(text: widget.roomData['RoomNumber']);
-    roomName = TextEditingController(text: widget.roomData['RoomName']);
-    roomDescription = TextEditingController(text: widget.roomData['RoomDescription']);
-    roomCategory = TextEditingController(text: widget.roomData['RoomCategory']);
-    roomPrice = TextEditingController(text: widget.roomData['price'].toString());
+    initializeAppwrite();
+    fetchRoomData();
   }
 
-  Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  // Initialize Appwrite Client
+  void initializeAppwrite() {
+    client = Client();
+    client.setEndpoint('https://cloud.appwrite.io/v1').setProject('676506150033480a87c5'); // Your Appwrite endpoint and project ID
+    databases = Databases(client);
+    storage = Storage(client);
+  }
 
-    if (pickedFile != null) {
+  // Fetch room data based on the room number
+  Future<void> fetchRoomData() async {
+    try {
+      DocumentList documentList = await databases.listDocuments(
+        databaseId: databaseId,
+        collectionId: collectionId,
+        queries: [
+          Query.equal('RoomNumber', widget.roomNumber), // Query to fetch room by roomNumber
+        ],
+      );
+
+      if (documentList.documents.isNotEmpty) {
+        setState(() {
+          roomData = documentList.documents.first.data; // Get the first document matching the room number
+          isLoading = false; // Data fetched, set loading to false
+        });
+      } else {
+        setState(() {
+          roomData = null; // If no room found, set to null
+          isLoading = false; // Set loading to false
+        });
+      }
+    } catch (e) {
+      print('Error fetching room data: $e');
       setState(() {
-        _image = File(pickedFile.path);
+        isLoading = false; // Set loading to false in case of error
       });
     }
   }
 
-  Future<void> _updateRoom() async {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Edit Room'),
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Show progress bar while loading
+          : roomData == null
+          ? Center(child: Text('Room not found')) // Show message if room not found
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextFormField(
+              initialValue: roomData!['RoomNumber'],
+              decoration: InputDecoration(
+                labelText: 'Room Number',
+              ),
+              readOnly: true, // Room number should not be editable
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              initialValue: roomData!['RoomName'],
+              decoration: InputDecoration(
+                labelText: 'Room Name',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  roomData!['RoomName'] = value;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              initialValue: roomData!['RoomDescription'],
+              decoration: InputDecoration(
+                labelText: 'Room Description',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  roomData!['RoomDescription'] = value;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              initialValue: roomData!['price'].toString(),
+              decoration: InputDecoration(
+                labelText: 'Room Price',
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {
+                  roomData!['price'] = double.tryParse(value) ?? 0.0;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Save the updated room details
+                saveRoomData();
+              },
+              child: Text('Save Changes'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Save the updated room data to Appwrite
+  Future<void> saveRoomData() async {
     try {
-      String fileId = widget.roomData['ImageUrl'];
+      // Assuming you have a `documentId` stored in roomData
+      String documentId = roomData!['\$id']; // Get the document ID from roomData
 
-      // If a new image is selected, upload it to Appwrite
-      if (_image != null) {
-        fileId = ID.unique();
-        await storage.createFile(
-          bucketId: '6784cf9d002262613d60', // Replace with your storage bucket ID
-          fileId: fileId,
-          file: InputFile.fromPath(path: _image!.path),
-        );
-      }
-
-      // Update room data in the database
-      await database.updateDocument(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '6784c4dd00332fc62aeb', // Replace with your collection ID
-        documentId: widget.roomData['\$id'], // Use the room's document ID
+      await databases.updateDocument(
+        databaseId: databaseId,
+        collectionId: collectionId,
+        documentId: documentId,
         data: {
-          'RoomNumber': roomNumber.text,
-          'RoomName': roomName.text,
-          'RoomDescription': roomDescription.text,
-          'RoomCategory': roomCategory.text,
-          'price': double.tryParse(roomPrice.text) ?? 0.0,
-          'ImageUrl': fileId,
+          'RoomName': roomData!['RoomName'],
+          'RoomDescription': roomData!['RoomDescription'],
+          'price': roomData!['price'],
         },
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Room updated successfully')),
       );
-      Navigator.pop(context); // Go back to the previous screen
     } catch (e) {
+      print('Error updating room: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating room: $e')),
       );
     }
-  }
-
-  @override
-  void dispose() {
-    roomNumber.dispose();
-    roomName.dispose();
-    roomDescription.dispose();
-    roomCategory.dispose();
-    roomPrice.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back),
-        ),
-        title: Text(
-          'Edit Room',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextFormField(
-              controller: roomNumber,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: 'Room number eg.1001',
-                filled: true,
-                fillColor: Color(0xFFDCDCDC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: roomName,
-              keyboardType: TextInputType.text,
-              decoration: InputDecoration(
-                hintText: 'Room name',
-                filled: true,
-                fillColor: Color(0xFFDCDCDC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: roomDescription,
-              keyboardType: TextInputType.text,
-              decoration: InputDecoration(
-                hintText: 'Room description',
-                filled: true,
-                fillColor: Color(0xFFDCDCDC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: roomCategory.text,
-              items: ['Air Conditioning', 'Non Air Conditioning']
-                  .map((category) => DropdownMenuItem(
-                value: category,
-                child: Text(category),
-              ))
-                  .toList(),
-              onChanged: (value) {
-                roomCategory.text = value ?? '';
-              },
-              decoration: InputDecoration(
-                hintText: 'Room category',
-                filled: true,
-                fillColor: Color(0xFFDCDCDC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: roomPrice,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: 'Room price',
-                filled: true,
-                fillColor: Color(0xFFDCDCDC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 24),
-            _image != null
-                ? Image.file(_image!, height: 200, fit: BoxFit.cover)
-                : widget.roomData['ImageUrl'] != null
-                ? Image.network(
-              'https://cloud.appwrite.io/v1/storage/buckets/6784cf9d002262613d60/files/${widget.roomData['ImageUrl']}/view?project=676506150033480a87c5',
-              height: 200,
-              fit: BoxFit.cover,
-            )
-                : Container(
-              height: 200,
-              color: Colors.grey[300],
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: Text('Change Image'),
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _updateRoom,
-              child: Text('Update Room'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
