@@ -69,10 +69,11 @@ class _SignupState extends State<Signup> {
       );
     } catch (e) {
       // Log the error
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const login()),
+      print('Error uploading file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration Failed')),
       );
+
     }
 
 
@@ -151,40 +152,52 @@ class _SignupState extends State<Signup> {
                   TextFormField(
                     controller: dobController,
                     decoration: customInputDecoration(
-                        'Date of birth eg.(yyyy-mm-dd)', Icons.calendar_today),
+                        'Date of birth eg.(dd-mm-yyyy)', Icons.calendar_today),
                     readOnly: true,
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
-                      );
-                      if (pickedDate != null) {
-                        dobController.text =
-                        "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
-                      }
-                    },
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please select your date of birth';
-                      }
-                      final dob = DateTime.tryParse(value);
-                      if (dob == null) {
-                        return 'Invalid date format';
-                      }
-                      final currentDate = DateTime.now();
-                      final age = currentDate.year -
-                          dob.year -
-                          (currentDate.isBefore(
-                              DateTime(currentDate.year, dob.month, dob.day))
-                              ? 1
-                              : 0);
-                      if (age < 18) {
-                        return 'You must be at least 18 years old';
-                      }
-                      return null;
-                    },
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+                        if (pickedDate != null) {
+                          dobController.text =
+                          "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
+                        }
+                      },
+
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please select your date of birth';
+                        }
+                        // Parse the dd-mm-yyyy format
+                        final dateParts = value.split('-');
+                        if (dateParts.length != 3) {
+                          return 'Invalid date format';
+                        }
+                        try {
+                          final day = int.parse(dateParts[0]);
+                          final month = int.parse(dateParts[1]);
+                          final year = int.parse(dateParts[2]);
+                          final dob = DateTime(year, month, day);
+
+                          final currentDate = DateTime.now();
+                          final age = currentDate.year -
+                              dob.year -
+                              (currentDate.isBefore(DateTime(currentDate.year, dob.month, dob.day))
+                                  ? 1
+                                  : 0);
+
+                          if (age < 18) {
+                            return 'You must be at least 18 years old';
+                          }
+                        } catch (e) {
+                          return 'Invalid date format';
+                        }
+                        return null;
+                      },
+
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

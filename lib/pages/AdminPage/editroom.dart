@@ -1,60 +1,69 @@
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
+import 'package:hoteldineflutter/pages/Database/appwriteConfig.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import '../Database/appwriteConfig.dart';
 class EditRoom extends StatefulWidget {
-  final int roomNumber;
-  final String roomName;
-  final String description;
-  final String category;
-  final double price;
-  final String imagePath;
+  final Map<String, dynamic> roomData; // Pass the room data as a map
 
-  EditRoom({
-    required this.roomNumber,
-    required this.roomName,
-    required this.description,
-    required this.category,
-    required this.price,
-    required this.imagePath,
-  });
+  EditRoom({required this.roomData, required roomNumber, required roomName, required description, required category, required price});
 
   @override
-  State<EditRoom> createState() => _EditRoomState();
+  State<EditRoom> createState() => _EditRoom();
 }
 
-class _EditRoomState extends State<EditRoom> {
-  late TextEditingController edRoomNumber;
-  late TextEditingController edRoomName;
-  late TextEditingController edRoomDescription;
-  late TextEditingController edRoomCategory;
-  late TextEditingController edRoomPrice;
 
+
+class _EditRoom extends State<EditRoom> {
+  late TextEditingController roomNumber;
+  late TextEditingController roomName;
+  late TextEditingController roomDescription;
+  late TextEditingController roomCategory;
+  late TextEditingController roomPrice;
+  late Databases databases;
   File? _image;
   final ImagePicker _picker = ImagePicker();
+
+  void initializeAppwrite() {
+    // Initialize Appwrite Client
+    Client client = Client();
+    client
+        .setEndpoint('https://cloud.appwrite.io/v1') // Your Appwrite endpoint
+        .setProject('676506150033480a87c5'); // Your Appwrite project ID
+    databases = Databases(client);
+    storage = Storage(client);
+  }
+  late Client client;
+  late Databases database;
+  late Storage storage;
+
+
 
   @override
   void initState() {
     super.initState();
-    edRoomNumber = TextEditingController(text: widget.roomNumber.toString());
-    edRoomName = TextEditingController(text: widget.roomName);
-    edRoomDescription = TextEditingController(text: widget.description);
-    edRoomCategory = TextEditingController(text: widget.category);
-    edRoomPrice = TextEditingController(text: widget.price.toString());
-  }
 
-  @override
-  void dispose() {
-    edRoomNumber.dispose();
-    edRoomName.dispose();
-    edRoomDescription.dispose();
-    edRoomCategory.dispose();
-    edRoomPrice.dispose();
-    super.dispose();
+    // Initialize Appwrite Client
+    client = Client()
+      ..setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
+      ..setProject('676506150033480a87c5'); // Replace with your Appwrite project ID
+
+    database = Databases(client);
+    storage = Storage(client);
+
+    // Initialize controllers with existing room data
+    roomNumber = TextEditingController(text: widget.roomData['RoomNumber']);
+    roomName = TextEditingController(text: widget.roomData['RoomName']);
+    roomDescription = TextEditingController(text: widget.roomData['RoomDescription']);
+    roomCategory = TextEditingController(text: widget.roomData['RoomCategory']);
+    roomPrice = TextEditingController(text: widget.roomData['price'].toString());
   }
 
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
@@ -62,20 +71,55 @@ class _EditRoomState extends State<EditRoom> {
     }
   }
 
-  void _saveRoom() {
-    final updatedRoom = {
-      'roomNumber': int.tryParse(edRoomNumber.text) ?? widget.roomNumber,
-      'roomName': edRoomName.text,
-      'description': edRoomDescription.text,
-      'category': edRoomCategory.text,
-      'price': double.tryParse(edRoomPrice.text) ?? widget.price.toDouble(),
-      'imagePath': _image?.path ?? widget.imagePath,  // Correctly passing image path
-    };
+  Future<void> _updateRoom() async {
+    try {
+      String fileId = widget.roomData['ImageUrl'];
 
-    Navigator.pop(context, updatedRoom); // Pass updated data back
+      // If a new image is selected, upload it to Appwrite
+      if (_image != null) {
+        fileId = ID.unique();
+        await storage.createFile(
+          bucketId: '6784cf9d002262613d60', // Replace with your storage bucket ID
+          fileId: fileId,
+          file: InputFile.fromPath(path: _image!.path),
+        );
+      }
+
+      // Update room data in the database
+      await database.updateDocument(
+        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+        collectionId: '6784c4dd00332fc62aeb', // Replace with your collection ID
+        documentId: widget.roomData['\$id'], // Use the room's document ID
+        data: {
+          'RoomNumber': roomNumber.text,
+          'RoomName': roomName.text,
+          'RoomDescription': roomDescription.text,
+          'RoomCategory': roomCategory.text,
+          'price': double.tryParse(roomPrice.text) ?? 0.0,
+          'ImageUrl': fileId,
+        },
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Room updated successfully')),
+      );
+      Navigator.pop(context); // Go back to the previous screen
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating room: $e')),
+      );
+    }
   }
 
-
+  @override
+  void dispose() {
+    roomNumber.dispose();
+    roomName.dispose();
+    roomDescription.dispose();
+    roomCategory.dispose();
+    roomPrice.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +131,7 @@ class _EditRoomState extends State<EditRoom> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back),
         ),
         title: Text(
           'Edit Room',
@@ -95,19 +139,17 @@ class _EditRoomState extends State<EditRoom> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Room Number
             TextFormField(
-              controller: edRoomNumber,
+              controller: roomNumber,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                hintText: 'Room number',
-                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
+                hintText: 'Room number eg.1001',
                 filled: true,
-                fillColor: const Color(0xFFDCDCDC),
+                fillColor: Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15.0),
                   borderSide: BorderSide.none,
@@ -115,16 +157,13 @@ class _EditRoomState extends State<EditRoom> {
               ),
             ),
             SizedBox(height: 12),
-
-            // Room Name
             TextFormField(
-              controller: edRoomName,
+              controller: roomName,
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 hintText: 'Room name',
-                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
-                fillColor: const Color(0xFFDCDCDC),
+                fillColor: Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15.0),
                   borderSide: BorderSide.none,
@@ -132,16 +171,13 @@ class _EditRoomState extends State<EditRoom> {
               ),
             ),
             SizedBox(height: 12),
-
-            // Room Description
             TextFormField(
-              controller: edRoomDescription,
+              controller: roomDescription,
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 hintText: 'Room description',
-                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
-                fillColor: const Color(0xFFDCDCDC),
+                fillColor: Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15.0),
                   borderSide: BorderSide.none,
@@ -149,10 +185,8 @@ class _EditRoomState extends State<EditRoom> {
               ),
             ),
             SizedBox(height: 12),
-
-            // Room Category
             DropdownButtonFormField<String>(
-              value: edRoomCategory.text.isNotEmpty ? edRoomCategory.text : null,
+              value: roomCategory.text,
               items: ['Air Conditioning', 'Non Air Conditioning']
                   .map((category) => DropdownMenuItem(
                 value: category,
@@ -160,33 +194,26 @@ class _EditRoomState extends State<EditRoom> {
               ))
                   .toList(),
               onChanged: (value) {
-                setState(() {
-                  edRoomCategory.text = value ?? '';
-                });
+                roomCategory.text = value ?? '';
               },
               decoration: InputDecoration(
                 hintText: 'Room category',
-                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
-                fillColor: const Color(0xFFDCDCDC),
+                fillColor: Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15.0),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
-
             SizedBox(height: 12),
-
-            // Room Price
             TextFormField(
-              controller: edRoomPrice,
+              controller: roomPrice,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 hintText: 'Room price',
-                hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
-                fillColor: const Color(0xFFDCDCDC),
+                fillColor: Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15.0),
                   borderSide: BorderSide.none,
@@ -194,58 +221,27 @@ class _EditRoomState extends State<EditRoom> {
               ),
             ),
             SizedBox(height: 24),
-
-            // Room Image Container
-            Container(
-              width: 137,
-              height: 120,
-              decoration: BoxDecoration(
-                image: _image != null
-                    ? DecorationImage(
-                  image: FileImage(_image!),
-                  fit: BoxFit.cover,
-                )
-                    : widget.imagePath.isNotEmpty
-                    ? DecorationImage(
-                  image: AssetImage(widget.imagePath),
-                  fit: BoxFit.cover,
-                )
-                    : null,
-              ),
+            _image != null
+                ? Image.file(_image!, height: 200, fit: BoxFit.cover)
+                : widget.roomData['ImageUrl'] != null
+                ? Image.network(
+              'https://cloud.appwrite.io/v1/storage/buckets/6784cf9d002262613d60/files/${widget.roomData['ImageUrl']}/view?project=676506150033480a87c5',
+              height: 200,
+              fit: BoxFit.cover,
+            )
+                : Container(
+              height: 200,
+              color: Colors.grey[300],
             ),
             SizedBox(height: 24),
-
-            // Select Image Button
             ElevatedButton(
               onPressed: _pickImage,
-              child: Text(
-                'Select Image',
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF19A7FE),
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+              child: Text('Change Image'),
             ),
             SizedBox(height: 24),
-
-            // Update Room Button
             ElevatedButton(
-              onPressed: _saveRoom,
-              child: Text(
-                'Update Room',
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF5870E8),
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+              onPressed: _updateRoom,
+              child: Text('Update Room'),
             ),
           ],
         ),
