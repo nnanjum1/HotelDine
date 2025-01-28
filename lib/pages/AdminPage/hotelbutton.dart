@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hoteldineflutter/pages/AdminPage/addroom.dart';
 import 'package:hoteldineflutter/pages/AdminPage/viewroom.dart';
+import 'package:hoteldineflutter/pages/AdminPage/editroom.dart';
+
 
 
 class HotelButton extends StatelessWidget {
@@ -65,7 +67,9 @@ class HotelButton extends StatelessWidget {
 
           SizedBox(height: 25),
           SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){},
+          ElevatedButton(onPressed: (){
+            //Navigator.push(context, MaterialPageRoute(builder: (context)=>  EditRoom()),);
+          },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF19A7FE),
               padding: EdgeInsets.symmetric( vertical: 8),

@@ -196,10 +196,10 @@ class _ViewRoomState extends State<ViewRoom> {
                         IconButton(
                           icon: Icon(Icons.edit, color: Colors.blue),
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => EditRoom()),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(builder: (context) => EditRoom()),
+                            // );
                           },
                         ),
                         IconButton(
