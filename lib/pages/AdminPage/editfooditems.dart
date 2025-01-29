@@ -54,7 +54,9 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
         _nameController.text = document.data['FoodItemName'];
         _descriptionController.text = document.data['Description'];
         _selectedCategory =
-        document.data['Category']; // Set the selected category
+
+            document.data['Category']; // Set the selected category
+
         _priceController.text = document.data['Price'].toString();
         isLoading = false;
       });
@@ -109,6 +111,7 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
+
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,6 +163,8 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
                 ),
                 child: const Text('Save Changes',
                     style: TextStyle(color: Colors.white)),
+
+              
               ),
             ),
           ],

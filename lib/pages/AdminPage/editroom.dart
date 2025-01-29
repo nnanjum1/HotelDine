@@ -57,7 +57,9 @@ class _EditRoomState extends State<EditRoom> {
           roomData = documentList.documents.first
               .data; // Get the first document matching the room number
           selectedCategory =
+
           roomData!['RoomCategory']; // Set initial category value
+
           isLoading = false; // Data fetched, set loading to false
         });
       } else {
@@ -82,6 +84,7 @@ class _EditRoomState extends State<EditRoom> {
       ),
       body: isLoading
           ? Center(
+
           child:
           CircularProgressIndicator()) // Show progress bar while loading
           : roomData == null
@@ -173,13 +176,16 @@ class _EditRoomState extends State<EditRoom> {
           ],
         ),
       ),
+
     );
   }
 
   // Save the updated room data to Appwrite
   Future<void> saveRoomData() async {
     try {
+
       // Assuming you have a documentId stored in roomData
+
       String documentId = roomData!['\$id'];
 
       await databases.updateDocument(
