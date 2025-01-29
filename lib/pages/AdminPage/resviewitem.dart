@@ -17,6 +17,10 @@ class _ViewItemState extends State<ViewItem> {
   List<Map<String, dynamic>> filteredItems = [];
   bool isLoading = true;
 
+  List<String> categories = ['All', 'Platter', 'Drinks', 'Appetizers', 'Dessert', 'Beverages'];
+  String selectedCategory = 'All';
+
+
   @override
   void initState() {
     super.initState();
@@ -91,16 +95,14 @@ class _ViewItemState extends State<ViewItem> {
 
   void _filterItems(String query) {
     setState(() {
-      if (query.isEmpty) {
-        filteredItems = items;
-      } else {
-        filteredItems = items.where((item) {
-          return item['category'].toLowerCase().contains(query.toLowerCase()) ||
-              item['itemName'].toLowerCase().contains(query.toLowerCase());
-        }).toList();
-      }
+      filteredItems = items.where((item) {
+        bool matchesSearch = item['itemName'].toLowerCase().contains(query.toLowerCase());
+        bool matchesCategory = selectedCategory == 'All' || item['category'] == selectedCategory;
+        return matchesSearch && matchesCategory;
+      }).toList();
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -129,22 +131,62 @@ class _ViewItemState extends State<ViewItem> {
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: TextField(
-                      onChanged: _filterItems,
-                      decoration: InputDecoration(
-                        hintText: 'Search by item name or category',
-                        filled: true,
-                        fillColor: const Color(0xFFDCDCDC),
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                          borderSide: BorderSide.none,
+              Padding(
+              padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    // Search Field
+                    Flexible(
+                      flex: 3,
+                      child: TextField(
+                        onChanged: _filterItems,
+                        decoration: InputDecoration(
+                          hintText: 'Item name',
+                          hintStyle: TextStyle(color: Color(0xFFC8BEBE)),
+                          filled: true,
+                          fillColor: const Color(0x4EE4ECDD),
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    SizedBox(width: 10), // Space between search and dropdown
+                    // Dropdown with fixed width
+                    SizedBox(
+                      width: 130, // Adjust as needed
+                      child: DropdownButtonFormField<String>(
+                        value: selectedCategory,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedCategory = newValue!;
+                            _filterItems('');
+                          });
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0x4EE4ECDD),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        items: categories.map((String category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+
+              ),
+
+
                   GridView.builder(
                     padding: const EdgeInsets.all(16.0),
                     shrinkWrap: true,
@@ -176,7 +218,7 @@ class _ViewItemState extends State<ViewItem> {
                                   'https://cloud.appwrite.io/v1/storage/buckets/6784cf9d002262613d60/files/${item['image']}/view?project=676506150033480a87c5',
                                   fit: BoxFit.cover,
                                   width: double.infinity,
-                                  height: 80,
+                                  height: 120,
                                   errorBuilder: (context, error, stackTrace) =>
                                       Icon(Icons.error),
                                 ),
@@ -250,6 +292,7 @@ class _ViewItemState extends State<ViewItem> {
                 ],
               ),
             ),
+
     );
   }
 }

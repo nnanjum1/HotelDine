@@ -113,24 +113,6 @@ class _AddItem extends State<AddItem> {
           style: TextStyle(color: Colors.black),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Color(0xFFE4E4E4),
-        currentIndex: 2,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.apartment),
-            label: 'Hotel',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_rounded),
-            label: 'Restaurant',
-          ),
-        ],
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Form(

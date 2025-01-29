@@ -185,16 +185,28 @@ class adminPage extends StatelessWidget {
 
             SizedBox(height: 16,),
             BottomNavigationBar(
-                currentIndex: 0,
+              currentIndex: 0, // Keep track of selected tab
+              backgroundColor: Color(0xFFE4E4E4),
+              onTap: (index) {
+                if (index == 1) { // Hotel tab clicked
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HotelButton()), // Navigate to HotelButton
+                  );
+                } else if (index == 2) { // Restaurant tab clicked
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RestaurantButton()), // Navigate to RestaurantButton
+                  );
+                }
+              },
+              items: [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                BottomNavigationBarItem(icon: Icon(Icons.apartment), label: 'Hotel'),
+                BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded), label: 'Restaurant'),
+              ],
+            ),
 
-                backgroundColor: Color(0xFFE4E4E4),
-
-                items:[
-
-                  BottomNavigationBarItem(icon: Icon(Icons.home),label: 'Home'),
-                  BottomNavigationBarItem(icon: Icon(Icons.apartment),label: 'Hotel'),
-                  BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded),label: 'Restaurant')
-                ]),
 
           ],
         ),

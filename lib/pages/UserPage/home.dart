@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Database/database.dart';
 import 'package:hoteldineflutter/pages/UserPage/chooseroom.dart';
+import 'package:hoteldineflutter/pages/UserPage/availablefoods.dart';
 
 
 class Homepage extends StatelessWidget {
@@ -189,6 +190,12 @@ class Homepage extends StatelessWidget {
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
+
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => Availablefoods()),
+                            );
 
                           },
                           style: ElevatedButton.styleFrom(

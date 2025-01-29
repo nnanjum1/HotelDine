@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hoteldineflutter/pages/AdminPage/resadditem.dart';
 import 'package:hoteldineflutter/pages/AdminPage/resviewitem.dart';
+import 'package:hoteldineflutter/pages/AdminPage/hotelbutton.dart';
+import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart';
 
 class RestaurantButton extends StatelessWidget {
   const RestaurantButton({super.key});
@@ -81,16 +83,27 @@ class RestaurantButton extends StatelessWidget {
         ],
 
       ),
-      bottomNavigationBar:  BottomNavigationBar(
-          backgroundColor: Color(0xFFE4E4E4),
-          currentIndex: 2,
-
-          items:[
-
-            BottomNavigationBarItem(icon: Icon(Icons.home),label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.hotel_rounded),label: 'Hotel'),
-            BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded),label: 'Restaurant')
-          ]
+      bottomNavigationBar:   BottomNavigationBar(
+        currentIndex: 2, // Keep track of selected tab
+        backgroundColor: Color(0xFFE4E4E4),
+        onTap: (index) {
+          if (index == 1) { // Hotel tab clicked
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HotelButton()), // Navigate to HotelButton
+            );
+          } else if (index == 0) { // Restaurant tab clicked
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => adminPage()), // Navigate to RestaurantButton
+            );
+          }
+        },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.apartment), label: 'Hotel'),
+          BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded), label: 'Restaurant'),
+        ],
       ),
 
 
