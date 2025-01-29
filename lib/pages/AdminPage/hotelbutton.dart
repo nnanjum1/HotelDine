@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hoteldineflutter/pages/AdminPage/addroom.dart';
+import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart';
 import 'package:hoteldineflutter/pages/AdminPage/viewroom.dart';
-import 'package:hoteldineflutter/pages/AdminPage/editroom.dart';
+import 'package:hoteldineflutter/pages/AdminPage/restaurantbutton.dart';
 
 
 
@@ -66,23 +67,7 @@ class HotelButton extends StatelessWidget {
 
 
           SizedBox(height: 25),
-          SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){
-            //Navigator.push(context, MaterialPageRoute(builder: (context)=>  EditRoom()),);
-          },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF19A7FE),
-              padding: EdgeInsets.symmetric( vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text('Update Room',style: TextStyle(fontSize: 14,color: Colors.white),),
 
-          ),
-          ),
-
-          SizedBox(height: 25),
           SizedBox(width: 316,child:
           ElevatedButton(onPressed: (){},
             style: ElevatedButton.styleFrom(
@@ -99,17 +84,28 @@ class HotelButton extends StatelessWidget {
         ],
 
       ),
-     bottomNavigationBar:  BottomNavigationBar(
-          backgroundColor: Color(0xFFE4E4E4),
-          currentIndex: 1,
-
-          items:[
-
-            BottomNavigationBarItem(icon: Icon(Icons.home),label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.apartment),label: 'Hotel'),
-            BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded),label: 'Restaurant')
-          ]
-      ),
+     bottomNavigationBar:   BottomNavigationBar(
+       currentIndex: 1, // Keep track of selected tab
+       backgroundColor: Color(0xFFE4E4E4),
+       onTap: (index) {
+         if (index == 0) { // Hotel tab clicked
+           Navigator.push(
+             context,
+             MaterialPageRoute(builder: (context) => adminPage()), // Navigate to HotelButton
+           );
+         } else if (index == 2) { // Restaurant tab clicked
+           Navigator.push(
+             context,
+             MaterialPageRoute(builder: (context) => RestaurantButton()), // Navigate to RestaurantButton
+           );
+         }
+       },
+       items: [
+         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+         BottomNavigationBarItem(icon: Icon(Icons.apartment), label: 'Hotel'),
+         BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded), label: 'Restaurant'),
+       ],
+     ),
 
 
     );

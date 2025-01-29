@@ -41,7 +41,7 @@ class _AddItem extends State<AddItem> {
 
   Future<void> _pickImage() async {
     final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
+    await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -73,7 +73,7 @@ class _AddItem extends State<AddItem> {
         await database.createDocument(
           databaseId: '67650e170015d7a01bc8', // Replace with your database ID
           collectionId:
-              '679914b6002ca53ab39b', // Replace with your collection ID
+          '679914b6002ca53ab39b', // Replace with your collection ID
           documentId: ID.unique(),
           data: {
             'FoodItemName': itemName.text,
@@ -112,24 +112,6 @@ class _AddItem extends State<AddItem> {
           'Add Food',
           style: TextStyle(color: Colors.black),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Color(0xFFE4E4E4),
-        currentIndex: 2,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.apartment),
-            label: 'Hotel',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_rounded),
-            label: 'Restaurant',
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -182,12 +164,12 @@ class _AddItem extends State<AddItem> {
               SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 items:
-                    ['Platter', 'Drinks', 'Appetizers', 'Dessert', 'Beverages']
-                        .map((category) => DropdownMenuItem(
-                              value: category,
-                              child: Text(category),
-                            ))
-                        .toList(),
+                ['Platter', 'Drinks', 'Appetizers', 'Dessert', 'Beverages']
+                    .map((category) => DropdownMenuItem(
+                  value: category,
+                  child: Text(category),
+                ))
+                    .toList(),
                 onChanged: (value) {
                   itemCategory.text = value ?? '';
                 },
@@ -240,9 +222,9 @@ class _AddItem extends State<AddItem> {
                   borderRadius: BorderRadius.circular(10),
                   image: _image != null
                       ? DecorationImage(
-                          image: FileImage(_image!),
-                          fit: BoxFit.cover,
-                        )
+                    image: FileImage(_image!),
+                    fit: BoxFit.cover,
+                  )
                       : null,
                 ),
               ),

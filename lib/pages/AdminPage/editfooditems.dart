@@ -54,7 +54,9 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
         _nameController.text = document.data['FoodItemName'];
         _descriptionController.text = document.data['Description'];
         _selectedCategory =
+
             document.data['Category']; // Set the selected category
+
         _priceController.text = document.data['Price'].toString();
         isLoading = false;
       });
@@ -109,62 +111,65 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Item Name',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  TextField(controller: _nameController),
-                  const SizedBox(height: 16),
-                  const Text('Description',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  TextField(controller: _descriptionController),
-                  const SizedBox(height: 16),
-                  const Text('Category',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  DropdownButton<String>(
-                    value: _selectedCategory,
-                    hint: const Text('Select Category'),
-                    isExpanded: true,
-                    items: categories.map((category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedCategory = newValue;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('Price',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  TextField(
-                      controller: _priceController,
-                      keyboardType: TextInputType.number),
-                  const SizedBox(height: 32),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: updateItemDetails,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 12),
-                      ),
-                      child: const Text('Save Changes',
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                ],
+
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Item Name',
+                style:
+                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            TextField(controller: _nameController),
+            const SizedBox(height: 16),
+            const Text('Description',
+                style:
+                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            TextField(controller: _descriptionController),
+            const SizedBox(height: 16),
+            const Text('Category',
+                style:
+                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            DropdownButton<String>(
+              value: _selectedCategory,
+              hint: const Text('Select Category'),
+              isExpanded: true,
+              items: categories.map((category) {
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedCategory = newValue;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            const Text('Price',
+                style:
+                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            TextField(
+                controller: _priceController,
+                keyboardType: TextInputType.number),
+            const SizedBox(height: 32),
+            Center(
+              child: ElevatedButton(
+                onPressed: updateItemDetails,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 40, vertical: 12),
+                ),
+                child: const Text('Save Changes',
+                    style: TextStyle(color: Colors.white)),
+
+              
               ),
             ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -57,7 +57,9 @@ class _EditRoomState extends State<EditRoom> {
           roomData = documentList.documents.first
               .data; // Get the first document matching the room number
           selectedCategory =
-              roomData!['RoomCategory']; // Set initial category value
+
+          roomData!['RoomCategory']; // Set initial category value
+
           isLoading = false; // Data fetched, set loading to false
         });
       } else {
@@ -82,104 +84,108 @@ class _EditRoomState extends State<EditRoom> {
       ),
       body: isLoading
           ? Center(
-              child:
-                  CircularProgressIndicator()) // Show progress bar while loading
+
+          child:
+          CircularProgressIndicator()) // Show progress bar while loading
           : roomData == null
-              ? Center(
-                  child:
-                      Text('Room not found')) // Show message if room not found
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextFormField(
-                        initialValue: roomData!['RoomNumber'],
-                        decoration: InputDecoration(
-                          labelText: 'Room Number',
-                        ),
-                        readOnly: true, // Room number should not be editable
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        initialValue: roomData!['RoomName'],
-                        decoration: InputDecoration(
-                          labelText: 'Room Name',
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            roomData!['RoomName'] = value;
-                          });
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      // Dropdown for Room Category (AC / Non-AC)
-                      DropdownButtonFormField<String>(
-                        value:
-                            selectedCategory.isEmpty ? null : selectedCategory,
-                        items: ['Air Conditioning', 'Non Air Conditioning']
-                            .map((category) => DropdownMenuItem(
-                                  value: category,
-                                  child: Text(category),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedCategory = value ?? '';
-                            roomData!['RoomCategory'] =
-                                selectedCategory; // Update the category in roomData
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Room Category',
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        initialValue: roomData!['RoomDescription'],
-                        decoration: InputDecoration(
-                          labelText: 'Room Description',
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            roomData!['RoomDescription'] = value;
-                          });
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        initialValue: roomData!['price'].toString(),
-                        decoration: InputDecoration(
-                          labelText: 'Room Price',
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          setState(() {
-                            roomData!['price'] = double.tryParse(value) ?? 0.0;
-                          });
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await saveRoomData(); // Save the updated room data
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => ViewRoom()),
-                          );
-                        },
-                        child: Text('Save Changes'),
-                      ),
-                    ],
-                  ),
-                ),
+          ? Center(
+          child:
+          Text('Room not found')) // Show message if room not found
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextFormField(
+              initialValue: roomData!['RoomNumber'],
+              decoration: InputDecoration(
+                labelText: 'Room Number',
+              ),
+              readOnly: true, // Room number should not be editable
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              initialValue: roomData!['RoomName'],
+              decoration: InputDecoration(
+                labelText: 'Room Name',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  roomData!['RoomName'] = value;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            // Dropdown for Room Category (AC / Non-AC)
+            DropdownButtonFormField<String>(
+              value:
+              selectedCategory.isEmpty ? null : selectedCategory,
+              items: ['Air Conditioning', 'Non Air Conditioning']
+                  .map((category) => DropdownMenuItem(
+                value: category,
+                child: Text(category),
+              ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedCategory = value ?? '';
+                  roomData!['RoomCategory'] =
+                      selectedCategory; // Update the category in roomData
+                });
+              },
+              decoration: InputDecoration(
+                labelText: 'Room Category',
+              ),
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              initialValue: roomData!['RoomDescription'],
+              decoration: InputDecoration(
+                labelText: 'Room Description',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  roomData!['RoomDescription'] = value;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              initialValue: roomData!['price'].toString(),
+              decoration: InputDecoration(
+                labelText: 'Room Price',
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {
+                  roomData!['price'] = double.tryParse(value) ?? 0.0;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                await saveRoomData(); // Save the updated room data
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => ViewRoom()),
+                );
+              },
+              child: Text('Save Changes'),
+            ),
+          ],
+        ),
+      ),
+
     );
   }
 
   // Save the updated room data to Appwrite
   Future<void> saveRoomData() async {
     try {
-      // Assuming you have a `documentId` stored in roomData
+
+      // Assuming you have a documentId stored in roomData
+
       String documentId = roomData!['\$id'];
 
       await databases.updateDocument(
