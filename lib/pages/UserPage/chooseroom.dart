@@ -4,6 +4,7 @@ import 'package:appwrite/models.dart';
 import 'dart:typed_data';
 import 'package:hoteldineflutter/pages/UserPage/detailsofroom.dart';
 import 'package:hoteldineflutter/pages/UserPage/myprofile.dart';
+import 'package:hoteldineflutter/pages/UserPage/savedroom.dart';
 
 class ChooseRoom extends StatefulWidget {
   @override
@@ -85,7 +86,7 @@ class ChooseRoomState extends State<ChooseRoom> {
     final List<Widget> body = [
       _homePage(),
       Center(child: Text('Booked Page')),
-      Center(child: Text('Saved Page')),
+      SavedRoom(),
       myprofile(),
     ];
 
@@ -421,7 +422,6 @@ class ChooseRoomState extends State<ChooseRoom> {
                                 ],
                               ),
                             ),
-                            // Second Column: Edit and Delete buttons
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
@@ -429,6 +429,10 @@ class ChooseRoomState extends State<ChooseRoom> {
 
                                  IconButton(
                                   onPressed: () {
+
+                                    setState(() {
+                                      currentIndex = 2;
+                                    });
                                   },
                                   icon: Icon(Icons.favorite_border_outlined),
 
