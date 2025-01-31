@@ -60,7 +60,7 @@ class MycartState extends State<Mycart> {
                 itemCount: cartItems.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    title: Text(cartItems[index]),
+                    title: Text(cartItems[index], style: TextStyle(color: Colors.black),),
                     // You can add more details like item price here
                   );
                 },
@@ -79,7 +79,7 @@ class MycartState extends State<Mycart> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Amount',
+                        'Total Amount ',
                         style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold),
                       ),
                       Text(
