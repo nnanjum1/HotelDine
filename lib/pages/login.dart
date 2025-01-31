@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart';
 import 'package:hoteldineflutter/pages/UserPage/home.dart';
 import 'package:hoteldineflutter/pages/signup.dart';
@@ -12,80 +13,73 @@ class login extends StatefulWidget {
 }
 
 class _LoginState extends State<login> {
-  bool isPasswordVisible = false; // State for password visibility
-  bool isRememberMeChecked = false; // State for "Remember Me" checkbox
-
-  final emailAddress = TextEditingController();
-  final password = TextEditingController();
+  bool isPasswordVisible = false;
+  bool isRememberMeChecked = false;
+  final TextEditingController emailAddress = TextEditingController();
+  final TextEditingController password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // Admin default credentials
   final String adminEmail = "admin@gmail.com";
   final String adminPassword = "password";
 
-  String errorMessage = ''; // Error message state
+  String errorMessage = '';
 
+  // 🔹 Save login session in SharedPreferences
+  Future<void> _saveLoginSession(String email, String role) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('email', email);
+    await prefs.setString('role', role);
+    await prefs.setBool('isLoggedIn', true);
+  }
+
+  // 🔹 User login function
   void loginUser() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
-      errorMessage = ''; // Clear previous error message
+      errorMessage = ''; // Clear previous errors
     });
 
     try {
-      // Check if admin login
       if (emailAddress.text == adminEmail && password.text == adminPassword) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Admin login successful')),
-        );
+        // ✅ **Admin Login**
+        await _saveLoginSession(adminEmail, 'admin');
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const adminPage()),
-
-
         );
       } else {
-        // Normal user login with Firebase authentication
+        // ✅ **User Login with Firebase**
         final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailAddress.text,
-          password: password.text,
+          email: emailAddress.text.trim(),
+          password: password.text.trim(),
         );
 
-        // Check if the user's email is verified
-        final user = FirebaseAuth.instance.currentUser;
+        final user = userCredential.user;
         if (user != null && !user.emailVerified) {
-          // If email is not verified, send a verification email and sign out
           await user.sendEmailVerification();
           setState(() {
-            errorMessage =
-            'A verification email has been sent to ${user.email}. Please verify your email and try again.';
+            errorMessage = 'Please verify your email and try again.';
           });
-          FirebaseAuth.instance.signOut(); // Sign out the user
+          await FirebaseAuth.instance.signOut();
           return;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful')),
-        );
+        // ✅ **Save session in SharedPreferences**
+        await _saveLoginSession(user!.email!, 'user');
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Homepage()),
         );
       }
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        setState(() {
-          errorMessage = 'No user found for that email.';
-        });
-      } else if (e.code == 'wrong-password') {
-        setState(() {
-          errorMessage = 'Wrong credentials. Please try again.';
-        });
-      } else {
-        setState(() {
-          errorMessage = 'Wrong credentials. Please try again.';
-        });
-      }
+      setState(() {
+        errorMessage = e.code == 'user-not-found'
+            ? 'No user found for that email.'
+            : 'Incorrect email or password. Try again.';
+      });
     }
   }
 

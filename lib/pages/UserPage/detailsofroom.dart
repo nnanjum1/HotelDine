@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hoteldineflutter/pages/UserPage/hotelpayment.dart';
 
 class detailsofroom extends StatelessWidget {
   const detailsofroom({super.key});
@@ -68,7 +69,7 @@ class detailsofroom extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Total Amount:',
+                      'Total Amoun:',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
@@ -83,6 +84,7 @@ class detailsofroom extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Paynow()),);
 
               },
               style: ElevatedButton.styleFrom(
