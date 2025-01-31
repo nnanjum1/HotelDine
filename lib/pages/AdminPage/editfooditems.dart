@@ -14,6 +14,7 @@ class FoodItemsEdit extends StatefulWidget {
 class _FoodItemsEditState extends State<FoodItemsEdit> {
   late Client client;
   late Databases database;
+  final _formKey = GlobalKey<FormState>(); // Key for the form
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -34,9 +35,8 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
     super.initState();
 
     client = Client()
-      ..setEndpoint(
-          'https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-      ..setProject('676506150033480a87c5'); // Replace with your project ID
+      ..setEndpoint('https://cloud.appwrite.io/v1')
+      ..setProject('676506150033480a87c5');
 
     database = Databases(client);
     fetchItemDetails();
@@ -45,18 +45,15 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
   Future<void> fetchItemDetails() async {
     try {
       final document = await database.getDocument(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679914b6002ca53ab39b', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679914b6002ca53ab39b',
         documentId: widget.documentId,
       );
 
       setState(() {
         _nameController.text = document.data['FoodItemName'];
         _descriptionController.text = document.data['Description'];
-        _selectedCategory =
-
-            document.data['Category']; // Set the selected category
-
+        _selectedCategory = document.data['Category'];
         _priceController.text = document.data['Price'].toString();
         isLoading = false;
       });
@@ -71,16 +68,18 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
   }
 
   Future<void> updateItemDetails() async {
+    if (!_formKey.currentState!.validate()) return; // Validate form fields
+
     try {
       await database.updateDocument(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679914b6002ca53ab39b', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679914b6002ca53ab39b',
         documentId: widget.documentId,
         data: {
           'FoodItemName': _nameController.text,
           'Description': _descriptionController.text,
-          'Category': _selectedCategory, // Pass selected category
-          'Price': double.tryParse(_priceController.text) ?? 0.0,
+          'Category': _selectedCategory,
+          'Price': double.parse(_priceController.text), // Ensure valid price
         },
       );
 
@@ -88,7 +87,7 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
         const SnackBar(content: Text('Item updated successfully')),
       );
 
-      Navigator.pop(context, true); // Return to previous screen and refresh
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating item: $e')),
@@ -111,65 +110,104 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Item Name Field
+                    const Text('Item Name',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    TextFormField(
+                      controller: _nameController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Item name is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
 
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Item Name',
-                style:
-                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            TextField(controller: _nameController),
-            const SizedBox(height: 16),
-            const Text('Description',
-                style:
-                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            TextField(controller: _descriptionController),
-            const SizedBox(height: 16),
-            const Text('Category',
-                style:
-                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            DropdownButton<String>(
-              value: _selectedCategory,
-              hint: const Text('Select Category'),
-              isExpanded: true,
-              items: categories.map((category) {
-                return DropdownMenuItem<String>(
-                  value: category,
-                  child: Text(category),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedCategory = newValue;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            const Text('Price',
-                style:
-                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            TextField(
-                controller: _priceController,
-                keyboardType: TextInputType.number),
-            const SizedBox(height: 32),
-            Center(
-              child: ElevatedButton(
-                onPressed: updateItemDetails,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 40, vertical: 12),
+                    // Description Field
+                    const Text('Description',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    TextFormField(
+                      controller: _descriptionController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Description is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Category Dropdown
+                    const Text('Category',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCategory,
+                      hint: const Text('Select Category'),
+                      isExpanded: true,
+                      items: categories.map((category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedCategory = newValue;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select a category';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Price Field
+                    const Text('Price',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    TextFormField(
+                      controller: _priceController,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        double? price = double.tryParse(value ?? '');
+                        if (price == null || price <= 0) {
+                          return 'Price must be greater than 0';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Save Changes Button
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: updateItemDetails,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 12),
+                        ),
+                        child: const Text('Save Changes',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text('Save Changes',
-                    style: TextStyle(color: Colors.white)),
-
-              
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

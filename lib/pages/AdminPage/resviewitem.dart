@@ -17,9 +17,15 @@ class _ViewItemState extends State<ViewItem> {
   List<Map<String, dynamic>> filteredItems = [];
   bool isLoading = true;
 
-  List<String> categories = ['All', 'Platter', 'Drinks', 'Appetizers', 'Dessert', 'Beverages'];
+  List<String> categories = [
+    'All',
+    'Platter',
+    'Drinks',
+    'Appetizers',
+    'Dessert',
+    'Beverages'
+  ];
   String selectedCategory = 'All';
-
 
   @override
   void initState() {
@@ -96,13 +102,14 @@ class _ViewItemState extends State<ViewItem> {
   void _filterItems(String query) {
     setState(() {
       filteredItems = items.where((item) {
-        bool matchesSearch = item['itemName'].toLowerCase().contains(query.toLowerCase());
-        bool matchesCategory = selectedCategory == 'All' || item['category'] == selectedCategory;
+        bool matchesSearch =
+            item['itemName'].toLowerCase().contains(query.toLowerCase());
+        bool matchesCategory =
+            selectedCategory == 'All' || item['category'] == selectedCategory;
         return matchesSearch && matchesCategory;
       }).toList();
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -125,68 +132,64 @@ class _ViewItemState extends State<ViewItem> {
         ],
       ),
       body: isLoading
-          ? Center(
-              child:
-                  CircularProgressIndicator()) // Show loading spinner while data is being fetched
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 children: [
-              Padding(
-              padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    // Search Field
-                    Flexible(
-                      flex: 3,
-                      child: TextField(
-                        onChanged: _filterItems,
-                        decoration: InputDecoration(
-                          hintText: 'Item name',
-                          hintStyle: TextStyle(color: Color(0xFFC8BEBE)),
-                          filled: true,
-                          fillColor: const Color(0x4EE4ECDD),
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                            borderSide: BorderSide.none,
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        // Search Field
+                        Flexible(
+                          flex: 3,
+                          child: TextField(
+                            onChanged: _filterItems,
+                            decoration: InputDecoration(
+                              hintText: 'Item name',
+                              hintStyle: TextStyle(color: Color(0xFFC8BEBE)),
+                              filled: true,
+                              fillColor: const Color(0x4EE4ECDD),
+                              prefixIcon: Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    SizedBox(width: 10), // Space between search and dropdown
-                    // Dropdown with fixed width
-                    SizedBox(
-                      width: 130, // Adjust as needed
-                      child: DropdownButtonFormField<String>(
-                        value: selectedCategory,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedCategory = newValue!;
-                            _filterItems('');
-                          });
-                        },
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0x4EE4ECDD),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                            borderSide: BorderSide.none,
+                        SizedBox(
+                            width: 10), // Space between search and dropdown
+                        // Dropdown with fixed width
+                        SizedBox(
+                          width: 130, // Adjust as needed
+                          child: DropdownButtonFormField<String>(
+                            value: selectedCategory,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedCategory = newValue!;
+                                _filterItems('');
+                              });
+                            },
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0x4EE4ECDD),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            items: categories.map((String category) {
+                              return DropdownMenuItem<String>(
+                                value: category,
+                                child: Text(category),
+                              );
+                            }).toList(),
                           ),
                         ),
-                        items: categories.map((String category) {
-                          return DropdownMenuItem<String>(
-                            value: category,
-                            child: Text(category),
-                          );
-                        }).toList(),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-
-              ),
-
-
+                  ),
                   GridView.builder(
                     padding: const EdgeInsets.all(16.0),
                     shrinkWrap: true,
@@ -292,7 +295,6 @@ class _ViewItemState extends State<ViewItem> {
                 ],
               ),
             ),
-
     );
   }
 }
