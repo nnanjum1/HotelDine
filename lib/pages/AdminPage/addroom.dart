@@ -35,8 +35,10 @@ class _AddRoom extends State<AddRoom> {
 
     // Initialize Appwrite Client
     client = Client()
-      ..setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-      ..setProject('676506150033480a87c5'); // Replace with your Appwrite project ID
+      ..setEndpoint(
+          'https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
+      ..setProject(
+          '676506150033480a87c5'); // Replace with your Appwrite project ID
 
     database = Databases(client);
     storage = Storage(client);
@@ -44,7 +46,8 @@ class _AddRoom extends State<AddRoom> {
 
   // Function to pick image from gallery
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -67,14 +70,15 @@ class _AddRoom extends State<AddRoom> {
         databaseId: '67650e170015d7a01bc8', // Replace with your database ID
         collectionId: '6784c4dd00332fc62aeb', // Replace with your collection ID
         queries: [
-          Query.equal('RoomNumber', roomNumber.text), // Correct query syntax
+          Query.equal('RoomNumber', roomNumber.text),
         ],
       );
 
       if (existingRooms.documents.isNotEmpty) {
         setState(() {
           // Show error below the room number field
-          roomNumberError = 'Room number is already used. Please choose a different one.';
+          roomNumberError =
+              'Room number is already used. Please choose a different one.';
         });
         return;
       }
@@ -88,20 +92,23 @@ class _AddRoom extends State<AddRoom> {
       try {
         // Upload the file to Appwrite Storage
         models.File uploadedFile = await storage.createFile(
-          bucketId: '6784cf9d002262613d60', // Replace with your storage bucket ID
+          bucketId:
+              '6784cf9d002262613d60', // Replace with your storage bucket ID
           fileId: fileId,
           file: InputFile.fromPath(path: _image!.path),
         );
 
         try {
-          final addRoomCollection = databaseService.getCollection('AddRoomContainer');
+          final addRoomCollection =
+              databaseService.getCollection('AddRoomContainer');
           await addRoomCollection['create'](
             payload: {
               'RoomNumber': roomNumber.text,
               'RoomName': roomName.text,
               'RoomDescription': roomDescription.text,
               'RoomCategory': roomCategory.text,
-              'price': double.tryParse(roomPrice.text) ?? 0.0, // Convert to double
+              'price':
+                  double.tryParse(roomPrice.text) ?? 0.0, // Convert to double
               'ImageUrl': fileId // Ensure it's a valid URL
             },
           );
@@ -199,9 +206,9 @@ class _AddRoom extends State<AddRoom> {
             DropdownButtonFormField<String>(
               items: ['Air Conditioning', 'Non Air Conditioning']
                   .map((category) => DropdownMenuItem(
-                value: category,
-                child: Text(category),
-              ))
+                        value: category,
+                        child: Text(category),
+                      ))
                   .toList(),
               onChanged: (value) {
                 roomCategory.text = value ?? '';
@@ -240,9 +247,10 @@ class _AddRoom extends State<AddRoom> {
                 borderRadius: BorderRadius.circular(10),
                 image: _image != null
                     ? DecorationImage(
-                  image: FileImage(_image!),
-                  fit: BoxFit.cover,
-                ): null,
+                        image: FileImage(_image!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
             ),
             SizedBox(height: 24),

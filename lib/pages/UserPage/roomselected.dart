@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as appwrite_models;
+import 'package:intl/intl.dart';
+
+import 'hotelpayment.dart';
 
 class RoomSelected extends StatefulWidget {
   final Map<String, dynamic> room;
@@ -28,12 +31,15 @@ class _RoomSelectedState extends State<RoomSelected> {
   firebase_auth.User? currentUser;
   Map<String, dynamic>? userData;
   bool isLoading = true;
+  int totalNights = 0;
+  double totalPrice = 0.0;
 
   @override
   void initState() {
     super.initState();
     initializeAppwrite();
     getCurrentUser();
+    calculateTotalPrice();
   }
 
   void initializeAppwrite() {
@@ -85,6 +91,24 @@ class _RoomSelectedState extends State<RoomSelected> {
     }
   }
 
+  void calculateTotalPrice() {
+    try {
+      DateTime checkIn = DateFormat('yyyy-MM-dd').parse(widget.checkInDate);
+      DateTime checkOut = DateFormat('yyyy-MM-dd').parse(widget.checkOutDate);
+      int nights = checkOut.difference(checkIn).inDays;
+
+      setState(() {
+        totalNights = nights > 0 ? nights : 1;
+        totalPrice = totalNights *
+            (widget.room['price'] is double
+                ? widget.room['price'] as double
+                : (widget.room['price'] as num).toDouble());
+      });
+    } catch (e) {
+      print("Error calculating total price: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,6 +120,7 @@ class _RoomSelectedState extends State<RoomSelected> {
             icon: Icon(Icons.refresh, color: Colors.black),
             onPressed: () {
               getCurrentUser();
+              calculateTotalPrice();
             },
           ),
         ],
@@ -145,9 +170,19 @@ class _RoomSelectedState extends State<RoomSelected> {
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
                       SizedBox(height: 8),
-                      Text('Total Amount: ${widget.room['price'] ?? 'N/A'}',
+                      Text('Total Nights: $totalNights',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 8),
+                      Text('Price per Night: ${widget.room['price'] ?? 'N/A'}',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 8),
+                      Text('Total Price: $totalPrice',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red)),
                       SizedBox(height: 8),
                       Text('Total Guests: ${widget.totalGuests}',
                           style: TextStyle(
@@ -158,22 +193,24 @@ class _RoomSelectedState extends State<RoomSelected> {
               ),
             ],
             Container(
-              margin: const EdgeInsets.only(
-                  top: 16), // Adjust the value for the desired margin
+              margin: const EdgeInsets.only(top: 16),
               child: ElevatedButton(
                 onPressed: () {
-                  // Implement payment logic
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Paynow()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   backgroundColor: Colors.blueAccent,
                 ),
                 child: const Text(
-                  'Pay Now',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  'Request to book',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
