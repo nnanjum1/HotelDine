@@ -302,7 +302,6 @@ class ChooseRoomState extends State<ChooseRoom> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // First Column: Room details
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,10 +380,8 @@ class ChooseRoomState extends State<ChooseRoom> {
                                         Icons.wifi,
                                         color: Colors.green,
                                         size: 16,
-                                      ), // WiFi icon
-                                      SizedBox(
-                                          width:
-                                              8), // Space between icon and text
+                                      ),
+                                      SizedBox(width: 8),
                                       Text(
                                         'Free WiFi',
                                         style: TextStyle(

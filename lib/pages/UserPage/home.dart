@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../Database/database.dart';
 import 'package:hoteldineflutter/pages/UserPage/chooseroom.dart';
 import 'package:hoteldineflutter/pages/UserPage/availablefoods.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hoteldineflutter/pages/login.dart';
+
 
 
 class Homepage extends StatelessWidget {
@@ -232,35 +235,37 @@ class Homepage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     // Logout button
-                    ElevatedButton(
-                      onPressed: () async {
-                        await FirebaseAuth.instance.signOut();
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/getStartedPage',
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE70A0A),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 47,
-                          vertical: 3,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(26),
-                        ),
-                        minimumSize: const Size(double.infinity, 36),
-                      ),
-                      child: const Text(
-                        'Log out',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.clear(); // Clear login session
+
+                    await FirebaseAuth.instance.signOut(); // Sign out from Firebase
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => login()), // Redirect to login page
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE70A0A),
+                    padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(26),
                     ),
-                  ],
+                    minimumSize: const Size(double.infinity, 36),
+                  ),
+                  child: const Text(
+                    'Log out',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+
+                ],
                 ),
               ),
             );

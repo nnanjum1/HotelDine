@@ -1,11 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-
-import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hoteldineflutter/pages/AdminPage/restaurantbutton.dart';
-import 'package:hoteldineflutter/pages/getStartedPage.dart';
-
+import 'package:hoteldineflutter/pages/login.dart';
 import 'hotelbutton.dart';
 
 class adminPage extends StatelessWidget {
@@ -157,33 +155,39 @@ class adminPage extends StatelessWidget {
               ),
             ),
 
-            ElevatedButton(
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => getStartedPage()), // Redirect to login page
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE70A0A),
-                padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(26),
-                ),
-                minimumSize: const Size(double.infinity, 36),
-              ),
-              child: const Text(
-                'Log out',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
 
-            SizedBox(height: 16,),
+          ElevatedButton(
+          onPressed: () async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear login session
+
+    await FirebaseAuth.instance.signOut(); // Sign out from Firebase
+
+    Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => login()), // Redirect to login page
+    );
+    },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFE70A0A),
+        padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(26),
+        ),
+        minimumSize: const Size(double.infinity, 36),
+      ),
+      child: const Text(
+        'Log out',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    ),
+
+
+    SizedBox(height: 16,),
             BottomNavigationBar(
               currentIndex: 0, // Keep track of selected tab
               backgroundColor: Color(0xFFE4E4E4),

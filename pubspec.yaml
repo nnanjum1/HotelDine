@@ -17,6 +17,9 @@ dependencies:
   appwrite: ^13.1.1
   uuid: ^3.0.7
   image_picker: ^0.8.7+3
+  shared_preferences: ^2.2.2
+  intl: ^0.18.0
+  fluttertoast: ^8.2.4
 
 
 dev_dependencies:
