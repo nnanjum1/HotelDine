@@ -87,7 +87,7 @@ class MycartState extends State<Mycart> {
         List<Map<String, dynamic>> updatedCartItems = [];
         for (var item in cartItems) {
           int existingIndex = updatedCartItems.indexWhere((existingItem) =>
-              existingItem['cartItemName'] == item['cartItemName']);
+          existingItem['cartItemName'] == item['cartItemName']);
           if (existingIndex == -1) {
             // Item doesn't exist in the list, add it
             updatedCartItems.add(item);
@@ -234,7 +234,7 @@ class MycartState extends State<Mycart> {
                                 borderRadius: BorderRadius.circular(10))),
                         child: Text("Browse",
                             style:
-                                TextStyle(fontSize: 16, color: Colors.white)),
+                            TextStyle(fontSize: 16, color: Colors.white)),
                       ),
                     ],
                   ),

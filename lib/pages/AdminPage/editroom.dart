@@ -79,7 +79,10 @@ class _EditRoomState extends State<EditRoom> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+
         title: Text('Edit Room'),
       ),
       body: isLoading

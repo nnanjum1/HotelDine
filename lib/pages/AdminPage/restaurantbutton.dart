@@ -4,6 +4,8 @@ import 'package:hoteldineflutter/pages/AdminPage/resviewitem.dart';
 import 'package:hoteldineflutter/pages/AdminPage/hotelbutton.dart';
 import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart';
 
+import 'manageorder.dart';
+
 class RestaurantButton extends StatelessWidget {
   const RestaurantButton({super.key});
 
@@ -68,7 +70,9 @@ class RestaurantButton extends StatelessWidget {
 
           SizedBox(height: 25),
           SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){},
+          ElevatedButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) =>ManageOrder(),));
+          },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF19A7FE),
               padding: EdgeInsets.symmetric(vertical: 8),
