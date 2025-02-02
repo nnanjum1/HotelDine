@@ -176,7 +176,7 @@ class _AddRoom extends State<AddRoom> {
                 suffixIcon: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
                     value: selectedValue,
-                    hint: Text("Select"),
+                    hint: Text("Select prefix"),
                     items: [10, 20, 30, 40, 50]
                         .map((int value) => DropdownMenuItem<int>(
                       value: value,
