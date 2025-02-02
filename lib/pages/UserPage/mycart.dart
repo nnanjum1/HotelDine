@@ -1,8 +1,12 @@
 import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/models.dart';
+import 'package:appwrite/models.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hoteldineflutter/pages/UserPage/availablefoods.dart';
 import 'package:hoteldineflutter/pages/UserPage/restaurantpayment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 class Mycart extends StatefulWidget {
   final String itemName;
@@ -48,22 +52,54 @@ class MycartState extends State<Mycart> {
     });
 
     try {
+      // Get the current user from Firebase
+      firebase_auth.User? user =
+          firebase_auth.FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        Fluttertoast.showToast(msg: 'Please log in to view cart data');
+        return;
+      }
+
+      // Fetch all documents from Appwrite
       final response = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8',
-        collectionId: '679e8489002cd468bb6b',
+        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+        collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
       );
 
+      // Filter documents based on the current user's email
       setState(() {
-        cartItems = response.documents.map((doc) {
+        cartItems = response.documents.where((doc) {
+          return doc.data['Email'] ==
+              user.email; // Match email field in Appwrite with Firebase email
+        }).map((doc) {
           return {
             'documentId': doc.$id,
             'cartItemName': doc.data['cartItemName'] ?? 'Unknown Item',
             'price': (doc.data['Price'] as num?)?.toDouble() ?? 0.0,
             'imageUrl': doc.data['ImageUrl'] ?? '',
             'quantity': (doc.data['Quantity'] as num?)?.toInt() ?? 1,
+            'Email': doc.data['Email'],
           };
         }).toList();
 
+        // Combine duplicate items with the same name and increase their quantity
+        List<Map<String, dynamic>> updatedCartItems = [];
+        for (var item in cartItems) {
+          int existingIndex = updatedCartItems.indexWhere((existingItem) =>
+          existingItem['cartItemName'] == item['cartItemName']);
+          if (existingIndex == -1) {
+            // Item doesn't exist in the list, add it
+            updatedCartItems.add(item);
+          } else {
+            // Item exists, increase the quantity
+            updatedCartItems[existingIndex]['quantity'] += item['quantity'];
+          }
+        }
+
+        cartItems = updatedCartItems;
+
+        // Recalculate the total amount
         totalAmount = cartItems.fold(
             0.0, (sum, item) => sum + (item['price'] * item['quantity']));
       });
@@ -88,11 +124,31 @@ class MycartState extends State<Mycart> {
     });
   }
 
-  void removeItemFromCart(int index) {
-    setState(() {
-      totalAmount -= cartItems[index]['price'] * cartItems[index]['quantity'];
-      cartItems.removeAt(index);
-    });
+  void removeItemFromCart(int index) async {
+    try {
+      // Get the document ID of the item you want to delete
+      String documentId = cartItems[index]['documentId'];
+
+      // Delete the item from the Appwrite database
+      await database.deleteDocument(
+        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+        collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
+        documentId: documentId,
+      );
+
+      // Remove the item from the UI list
+      setState(() {
+        totalAmount -= cartItems[index]['price'] * cartItems[index]['quantity'];
+        cartItems.removeAt(index);
+      });
+
+      // Show a success message
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Item removed from cart and database successfully')));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error deleting item: $e')));
+    }
   }
 
   Future<void> saveCartToDatabase() async {
@@ -178,7 +234,7 @@ class MycartState extends State<Mycart> {
                                 borderRadius: BorderRadius.circular(10))),
                         child: Text("Browse",
                             style:
-                                TextStyle(fontSize: 16, color: Colors.white)),
+                            TextStyle(fontSize: 16, color: Colors.white)),
                       ),
                     ],
                   ),
