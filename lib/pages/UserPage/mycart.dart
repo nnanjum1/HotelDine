@@ -9,7 +9,6 @@ class Mycart extends StatefulWidget {
   final String price;
   final String imageUrl;
 
-  // Constructor to receive data from the previous screen
   Mycart({
     required this.itemName,
     required this.price,
@@ -21,9 +20,9 @@ class Mycart extends StatefulWidget {
 }
 
 class MycartState extends State<Mycart> {
-  List<Map<String, dynamic>> cartItems =
-      []; // Empty list for now, simulate an empty cart
+  List<Map<String, dynamic>> cartItems = [];
   double totalAmount = 0.0;
+  bool isLoading = false; // To control the visibility of the progress bar
 
   late Client client;
   late Databases database;
@@ -33,48 +32,62 @@ class MycartState extends State<Mycart> {
   void initState() {
     super.initState();
 
-    // Initialize Appwrite Client
     client = Client()
-      ..setEndpoint(
-          'https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-      ..setProject(
-          '676506150033480a87c5'); // Replace with your Appwrite project ID
+      ..setEndpoint('https://cloud.appwrite.io/v1')
+      ..setProject('676506150033480a87c5');
 
     database = Databases(client);
     storage = Storage(client);
 
-    // Add the received item to the cart on initialization
-    addItemToCart();
+    fetchCartData(); // Fetch stored cart data when screen loads
   }
 
-  // Function to add an item to the cart
-  void addItemToCart() {
+  Future<void> fetchCartData() async {
     setState(() {
-      cartItems.add({
-        'itemName': widget.itemName,
-        'price': double.parse(widget.price),
-        'image': widget.imageUrl,
-        'quantity': 1, // Initial quantity is 1
-      });
-      totalAmount += double.parse(widget.price); // Add price of the item
+      isLoading = true; // Show the progress bar when data is being fetched
     });
+
+    try {
+      final response = await database.listDocuments(
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679e8489002cd468bb6b',
+      );
+
+      setState(() {
+        cartItems = response.documents.map((doc) {
+          return {
+            'documentId': doc.$id,
+            'cartItemName': doc.data['cartItemName'] ?? 'Unknown Item',
+            'price': (doc.data['Price'] as num?)?.toDouble() ?? 0.0,
+            'imageUrl': doc.data['ImageUrl'] ?? '',
+            'quantity': (doc.data['Quantity'] as num?)?.toInt() ?? 1,
+          };
+        }).toList();
+
+        totalAmount = cartItems.fold(
+            0.0, (sum, item) => sum + (item['price'] * item['quantity']));
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error fetching cart: $e')));
+    } finally {
+      setState(() {
+        isLoading = false; // Hide the progress bar after the data is fetched
+      });
+    }
   }
 
-  // Function to update the quantity and total price
   void updateQuantity(int index, int change) {
     setState(() {
       cartItems[index]['quantity'] += change;
       if (cartItems[index]['quantity'] < 1) {
-        cartItems[index]['quantity'] = 1; // Prevent negative quantity
+        cartItems[index]['quantity'] = 1;
       }
-      totalAmount = 0.0;
-      for (var item in cartItems) {
-        totalAmount += item['price'] * item['quantity'];
-      }
+      totalAmount = cartItems.fold(
+          0.0, (sum, item) => sum + (item['price'] * item['quantity']));
     });
   }
 
-  // Function to remove an item from the cart
   void removeItemFromCart(int index) {
     setState(() {
       totalAmount -= cartItems[index]['price'] * cartItems[index]['quantity'];
@@ -82,124 +95,90 @@ class MycartState extends State<Mycart> {
     });
   }
 
-  // Function to save cart data to Appwrite Database
-  void saveCartToDatabase() async {
+  Future<void> saveCartToDatabase() async {
     try {
-      // Insert into database
       for (var item in cartItems) {
         await database.createDocument(
-          databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-          collectionId:
-              '679d386f000950a1c082', // Replace with your collection ID
+          databaseId: '67650e170015d7a01bc8',
+          collectionId: '679d386f000950a1c082',
           documentId: ID.unique(),
           data: {
-            'ItemName': item['itemName'],
+            'ItemName': item['cartItemName'],
             'Price': item['price'],
             'Quantity': item['quantity'],
           },
         );
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Cart saved successfully')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Cart saved successfully')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving cart: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error saving cart: $e')));
     }
   }
 
-  // Function to clear cart data from both UI and Appwrite database
-  void _reloadRooms() async {
+  Future<void> _reloadCart() async {
+    setState(() {
+      isLoading = true; // Show the progress bar during reload
+    });
+
     try {
-      // Clear the cart items in the Appwrite database if they exist
-      for (var item in cartItems) {
-        // Assuming each cart item has a unique 'documentId' to delete from the database
-        await database.deleteDocument(
-          databaseId: '67650e170015d7a01bc8', // Your database ID
-          collectionId: '679d386f000950a1c082', // Your collection ID
-          documentId: item[
-              'documentId'], // Assuming you have a 'documentId' for each cart item
-        );
-      }
-
-      // Clear local cart data
-      setState(() {
-        cartItems.clear();
-        totalAmount = 0.0;
-      });
-
-      // Optionally, clear shared preferences or any other persistent storage
+      cartItems.clear();
+      totalAmount = 0.0;
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.remove('cart_items'); // Clear stored cart items if needed
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Cart data has been cleared.')),
-      );
+      prefs.remove('cart_items');
+      setState(() {});
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Cart data has been cleared.')));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error clearing cart data: $e')),
-      );
+          SnackBar(content: Text('Error clearing cart data: $e')));
+    } finally {
+      setState(() {
+        isLoading = false; // Hide the progress bar after reload
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF1F1F1), // Custom color for app bar
-        title: Text(
-          'My Cart',
-          style: TextStyle(color: Colors.black), // Adjust the title style
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: Colors.black),
-            onPressed: _reloadRooms, // Calls the reload function
-          ),
-        ],
-      ),
       backgroundColor: Colors.white,
       body: Padding(
-        padding: EdgeInsets.all(16), // Add padding to the page
+        padding: EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // If cart is empty, show the message and button
-            if (cartItems.isEmpty)
+            if (isLoading)
+              Center(
+                child: CircularProgressIndicator(), // Progress bar during load
+              )
+            else if (cartItems.isEmpty)
               Expanded(
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        "You haven’t added anything to your cart!",
-                        style: TextStyle(fontSize: 18),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 30), // Space between text and button
+                      Text("You haven’t added anything to your cart!",
+                          style: TextStyle(fontSize: 18),
+                          textAlign: TextAlign.center),
+                      SizedBox(height: 30),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Availablefoods()),
-                          );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Availablefoods()));
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Color(0xFFBB8506), // Custom button color
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          "Browse",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
+                            backgroundColor: Color(0xFFBB8506),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10))),
+                        child: Text("Browse",
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.white)),
                       ),
                     ],
                   ),
@@ -212,49 +191,37 @@ class MycartState extends State<Mycart> {
                   itemBuilder: (context, index) {
                     var item = cartItems[index];
                     return ListTile(
-                      leading: Image.network(
-                        item['image'],
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
-                      title: Text(item['itemName'],
+                      leading: Image.network(item['imageUrl'],
+                          width: 50, height: 50, fit: BoxFit.cover),
+                      title: Text(item['cartItemName'],
                           style: TextStyle(color: Colors.black)),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('BDT ${item['price']}'),
-                          SizedBox(height: 5),
                           Row(
                             children: [
                               IconButton(
-                                icon: Icon(Icons.remove_circle_outline,
-                                    color: Colors.red),
-                                onPressed: () => updateQuantity(
-                                    index, -1), // Decrease quantity
-                              ),
+                                  icon: Icon(Icons.remove_circle_outline,
+                                      color: Colors.red),
+                                  onPressed: () => updateQuantity(index, -1)),
                               Text('${item['quantity']}',
                                   style: TextStyle(fontSize: 18)),
                               IconButton(
-                                icon: Icon(Icons.add_circle_outline,
-                                    color: Colors.green),
-                                onPressed: () => updateQuantity(
-                                    index, 1), // Increase quantity
-                              ),
+                                  icon: Icon(Icons.add_circle_outline,
+                                      color: Colors.green),
+                                  onPressed: () => updateQuantity(index, 1)),
                             ],
                           ),
                         ],
                       ),
                       trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => removeItemFromCart(index),
-                      ),
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => removeItemFromCart(index)),
                     );
                   },
                 ),
               ),
-
-            // If cart is not empty, show total amount and Pay Now button
             if (cartItems.isNotEmpty)
               Container(
                 padding: EdgeInsets.all(16),
@@ -265,40 +232,28 @@ class MycartState extends State<Mycart> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Total Amount',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'BDT ${totalAmount.toStringAsFixed(2)}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                        Text('Total Amount',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold)),
+                        Text('BDT ${totalAmount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // Save cart to database before navigating
                         saveCartToDatabase();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Paynow()),
-                        );
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Paynow()));
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Color(0xFFBB8506), // Custom button color
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        "Pay Now",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
+                          backgroundColor: Color(0xFFBB8506),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10))),
+                      child: Text("Pay Now",
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
                     ),
                   ],
                 ),
