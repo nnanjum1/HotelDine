@@ -1,5 +1,9 @@
 import 'dart:io';
 
+import 'package:appwrite/models.dart';
+import 'package:appwrite/models.dart';
+import 'package:appwrite/models.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
@@ -7,6 +11,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:typed_data';
 import 'package:hoteldineflutter/pages/UserPage/myprofile.dart';
 import 'package:hoteldineflutter/pages/UserPage/mycart.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 class Availablefoods extends StatefulWidget {
   @override
@@ -85,10 +90,19 @@ class AvailablefoodsState extends State<Availablefoods> {
   void saveCartToDatabase(String itemName, String itemDescription, String price,
       String imageUrl) async {
     try {
+      // Get the current user from Firebase
+      firebase_auth.User? user = FirebaseAuth.instance.currentUser;
+
+      // If the user is not logged in, show a toast message and return
+      if (user == null) {
+        Fluttertoast.showToast(msg: 'Please log in to add items to cart');
+        return;
+      }
+
       // Generate a unique ID for the cart item
       final String cartItemId = ID.unique();
 
-      // Insert into database (this is where we save the cart item details)
+      // Insert into the database (this is where we save the cart item details)
       await database.createDocument(
         databaseId: '67650e170015d7a01bc8', // Replace with your database ID
         collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
@@ -98,6 +112,7 @@ class AvailablefoodsState extends State<Availablefoods> {
           'cartDescription': itemDescription,
           'Price': double.tryParse(price) ?? 0.0,
           'ImageUrl': imageUrl, // Pass the image URL here
+          'Email': user.email ?? '', // Set the current user's email
         },
       );
 
@@ -322,8 +337,10 @@ class AvailablefoodsState extends State<Availablefoods> {
                                         children: [
                                           GestureDetector(
                                             onTap: () {
+                                              // Show a toast when the button is pressed
                                               Fluttertoast.showToast(
-                                                msg: 'add to cart',
+                                                msg:
+                                                    'Item added to cart! visit cart',
                                                 toastLength: Toast.LENGTH_SHORT,
                                                 gravity: ToastGravity.BOTTOM,
                                                 backgroundColor: Colors.black,
@@ -331,25 +348,12 @@ class AvailablefoodsState extends State<Availablefoods> {
                                                 fontSize: 16.0,
                                               );
 
-                                              // Save cart item to database
+                                              // Save cart item to the database (you can pass the relevant details)
                                               saveCartToDatabase(
                                                 item['itemName'],
                                                 item['itemDescription'],
                                                 item['price'].toString(),
                                                 'https://cloud.appwrite.io/v1/storage/buckets/6784cf9d002262613d60/files/${item['image']}/view?project=676506150033480a87c5',
-                                              );
-
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => Mycart(
-                                                    itemName: item['itemName'],
-                                                    price: item['price']
-                                                        .toString(), // Ensure price is converted to String
-                                                    imageUrl:
-                                                        'https://cloud.appwrite.io/v1/storage/buckets/6784cf9d002262613d60/files/${item['image']}/view?project=676506150033480a87c5',
-                                                  ),
-                                                ),
                                               );
                                             },
                                             child: Text(
