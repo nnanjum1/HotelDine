@@ -87,7 +87,7 @@ class MycartState extends State<Mycart> {
         List<Map<String, dynamic>> updatedCartItems = [];
         for (var item in cartItems) {
           int existingIndex = updatedCartItems.indexWhere((existingItem) =>
-          existingItem['cartItemName'] == item['cartItemName']);
+              existingItem['cartItemName'] == item['cartItemName']);
           if (existingIndex == -1) {
             // Item doesn't exist in the list, add it
             updatedCartItems.add(item);
@@ -165,8 +165,6 @@ class MycartState extends State<Mycart> {
           },
         );
       }
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Cart saved successfully')));
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error saving cart: $e')));
@@ -234,7 +232,7 @@ class MycartState extends State<Mycart> {
                                 borderRadius: BorderRadius.circular(10))),
                         child: Text("Browse",
                             style:
-                            TextStyle(fontSize: 16, color: Colors.white)),
+                                TextStyle(fontSize: 16, color: Colors.white)),
                       ),
                     ],
                   ),
@@ -298,16 +296,24 @@ class MycartState extends State<Mycart> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        saveCartToDatabase();
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Paynow()));
+                        saveCartToDatabase(); // Save the cart items to the database (if needed)
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Paynow(
+                              cartItems: cartItems, // Pass the cart items
+                              totalAmount: totalAmount, // Pass the total amount
+                            ),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFBB8506),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10))),
+                        backgroundColor: Color(0xFFBB8506),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
                       child: Text("Pay Now",
                           style: TextStyle(fontSize: 16, color: Colors.white)),
                     ),

@@ -198,7 +198,7 @@ class _RoomSelectedState extends State<RoomSelected> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Paynow()),
+                    MaterialPageRoute(builder: (context) => HotelPaynow()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
