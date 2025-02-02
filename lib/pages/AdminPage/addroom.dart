@@ -19,6 +19,7 @@ class _AddRoom extends State<AddRoom> {
   final roomDescription = TextEditingController();
   final roomCategory = TextEditingController();
   final roomPrice = TextEditingController();
+  int ? selectedValue;
 
   File? _image;
   final ImagePicker _picker = ImagePicker();
@@ -59,6 +60,13 @@ class _AddRoom extends State<AddRoom> {
         SnackBar(content: Text('Please select an image')),
       );
       return;
+
+    }
+    if (selectedValue == null) {
+      setState(() {
+        roomNumberError = 'Please select a room number prefix from drop down'; // Display error
+      });
+      return;
     }
 
     // Check if the room number is already taken
@@ -94,15 +102,17 @@ class _AddRoom extends State<AddRoom> {
         );
 
         try {
-          final addRoomCollection = databaseService.getCollection('AddRoomContainer');
-          await addRoomCollection['create'](
-            payload: {
+          await database.createDocument(
+            databaseId: '67650e170015d7a01bc8', // Your actual database ID
+            collectionId: '6784c4dd00332fc62aeb', // Your actual collection ID
+            documentId: ID.unique(), // Generate a unique ID for the document
+            data: {
               'RoomNumber': roomNumber.text,
               'RoomName': roomName.text,
               'RoomDescription': roomDescription.text,
               'RoomCategory': roomCategory.text,
-              'price': double.tryParse(roomPrice.text) ?? 0.0, // Convert to double
-              'ImageUrl': fileId // Ensure it's a valid URL
+              'price': double.tryParse(roomPrice.text) ?? 0.0, // Convert price to double
+              'ImageUrl': fileId, // Store image file ID
             },
           );
           ScaffoldMessenger.of(context).showSnackBar(
@@ -163,8 +173,39 @@ class _AddRoom extends State<AddRoom> {
                   borderSide: BorderSide.none,
                 ),
                 errorText: roomNumberError,
+                suffixIcon: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: selectedValue,
+                    hint: Text("Select"),
+                    items: [10, 20, 30, 40, 50]
+                        .map((int value) => DropdownMenuItem<int>(
+                      value: value,
+                      child: Text(value.toString()),
+                    ))
+                        .toList(),
+                    onChanged: (int? newValue) {
+                      setState(() {
+                        selectedValue = newValue;
+                        roomNumber.text = newValue?.toString() ?? ''; // Update room number text field
+                      });
+                    },
+                  ),
+                ),
               ),
-            ),
+          onChanged: (value) {
+            // Validate the room number length
+            if (value.length < 4) {
+              setState(() {
+                roomNumberError = 'Room number must be at least 4 digits';
+              });
+            } else {
+              setState(() {
+                roomNumberError = null; // Clear error message if valid
+              });
+            }
+          },
+        ),
+
             SizedBox(height: 12),
             TextFormField(
               controller: roomName,
