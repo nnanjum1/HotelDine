@@ -259,9 +259,9 @@ class _SignupState extends State<Signup> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor:const Color(0xFF19A7FE),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                       ),
                       child: const Text(

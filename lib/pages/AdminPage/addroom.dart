@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:appwrite/appwrite.dart'; // Import Appwrite SDK
 import 'package:appwrite/models.dart' as models; // For Appwrite models
 import 'package:uuid/uuid.dart';
@@ -62,12 +63,7 @@ class _AddRoom extends State<AddRoom> {
       return;
 
     }
-    if (selectedValue == null) {
-      setState(() {
-        roomNumberError = 'Please select a room number prefix from drop down'; // Display error
-      });
-      return;
-    }
+
 
     // Check if the room number is already taken
     try {
@@ -163,8 +159,9 @@ class _AddRoom extends State<AddRoom> {
             TextFormField(
               controller: roomNumber,
               keyboardType: TextInputType.number,
+              readOnly: true, // Prevents manual editing
               decoration: InputDecoration(
-                hintText: 'Room number eg.1001',
+                hintText: 'Room number eg. 1001',
                 hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
                 filled: true,
                 fillColor: Color(0xFFDCDCDC),
@@ -172,39 +169,83 @@ class _AddRoom extends State<AddRoom> {
                   borderRadius: BorderRadius.circular(15.0),
                   borderSide: BorderSide.none,
                 ),
-                errorText: roomNumberError,
-                suffixIcon: DropdownButtonHideUnderline(
-                  child: DropdownButton<int>(
-                    value: selectedValue,
-                    hint: Text("Select prefix"),
-                    items: [10, 20, 30, 40, 50]
-                        .map((int value) => DropdownMenuItem<int>(
-                      value: value,
-                      child: Text(value.toString()),
-                    ))
-                        .toList(),
-                    onChanged: (int? newValue) {
-                      setState(() {
-                        selectedValue = newValue;
-                        roomNumber.text = newValue?.toString() ?? ''; // Update room number text field
-                      });
-                    },
+                errorText: roomNumberError, // Ensure this updates dynamically
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(8.0), // Add padding here to control the space around the dropdown
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: selectedValue,
+                      hint: Text("Select"),
+                      items: [10, 20, 30, 40, 50]
+                          .map((int value) => DropdownMenuItem<int>(
+                        value: value,
+                        child: Text(value.toString()),
+                      ))
+                          .toList(),
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          selectedValue = newValue;
+                          roomNumber.text = newValue != null ? '$newValue' : '';
+                          roomNumberError = null; // Clear error when selecting a prefix
+                        });
+                      },
+                    ),
                   ),
                 ),
               ),
-          onChanged: (value) {
-            // Validate the room number length
-            if (value.length < 4) {
-              setState(() {
-                roomNumberError = 'Room number must be at least 4 digits';
-              });
-            } else {
-              setState(() {
-                roomNumberError = null; // Clear error message if valid
-              });
-            }
-          },
-        ),
+              onTap: () async {
+                if (selectedValue == null) {
+                  Fluttertoast.showToast(msg: 'Please select a prefix first.');
+                  return;
+                }
+
+                String? result = await showDialog(
+                  context: context,
+                  builder: (context) {
+                    TextEditingController numberController = TextEditingController();
+                    return AlertDialog(
+                      title: Text('Enter Room Number'),
+                      content: TextField(
+                        controller: numberController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(hintText: 'Enter at least 2 digits',
+                            hintStyle: TextStyle(color: Colors.grey[500])),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context, null);
+                          },
+                          child: Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            String enteredText = numberController.text.trim();
+                            if (enteredText.length >= 2 && RegExp(r'^\d+$').hasMatch(enteredText)) {
+                              Navigator.pop(context, enteredText);
+                            } else {
+                              Fluttertoast.showToast(msg: "Enter at least 2 digits after the prefix.");
+                            }
+                          },
+                          child: Text('Done'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                setState(() {
+                  if (result != null && result.length >= 2) {
+                    roomNumber.text = '$selectedValue$result';
+                    roomNumberError = null; // Clear error on valid input
+                  } else {
+                    roomNumberError = "Room number must have at least 2 digits after the prefix.";
+                    roomNumber.text = ''; // Reset room number if invalid input is given
+                  }
+                });
+              },
+            )
+            ,
 
             SizedBox(height: 12),
             TextFormField(
