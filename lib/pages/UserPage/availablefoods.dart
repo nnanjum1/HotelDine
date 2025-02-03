@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hoteldineflutter/pages/UserPage/myorder.dart';
 import 'dart:typed_data';
 import 'package:hoteldineflutter/pages/UserPage/myprofile.dart';
 import 'package:hoteldineflutter/pages/UserPage/mycart.dart';
@@ -115,10 +116,6 @@ class AvailablefoodsState extends State<Availablefoods> {
           'Email': user.email ?? '', // Set the current user's email
         },
       );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Item added to cart successfully')),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error adding item to cart: $e')),
@@ -147,7 +144,7 @@ class AvailablefoodsState extends State<Availablefoods> {
         price: '0.0',
         imageUrl: '',
       ),
-      Center(child: Text('Order Page')),
+      Myorder(),
       myprofile(),
     ];
 
@@ -340,7 +337,7 @@ class AvailablefoodsState extends State<Availablefoods> {
                                               // Show a toast when the button is pressed
                                               Fluttertoast.showToast(
                                                 msg:
-                                                    'Item added to cart! visit cart',
+                                                    '${item['itemName']} added to cart!',
                                                 toastLength: Toast.LENGTH_SHORT,
                                                 gravity: ToastGravity.BOTTOM,
                                                 backgroundColor: Colors.black,

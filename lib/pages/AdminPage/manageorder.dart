@@ -1,126 +1,79 @@
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-class ManageOrder extends StatefulWidget {
+class UserorderList extends StatefulWidget {
   @override
-  ManageOrderState createState() => ManageOrderState();
+  MyorderState createState() => MyorderState();
 }
 
-class ManageOrderState extends State<ManageOrder> {
-  bool isLoading = true;
-  // List of orders, initially with payment method as null or predefined
-  List<Map<String, dynamic>> orders = [
-    {
-      'OrderID': 'ORD123456',
-      'PaymentMethod': null,  // Initially null
-      'TransactionID': 'TXN7890',
-      'Status': 'processing',
-      'Items': [
-        {'ItemName': 'Burger', 'ItemQuantity': 2, 'Price': 12.99},
-        {'ItemName': 'Fries', 'ItemQuantity': 1, 'Price': 4.50},
-      ],
-      'DeliveryRoom': '1001',
-      'IsDelivered': false,
-      'PhoneNumber': '123-456-7890',
-    },
-    {
-      'OrderID': 'ORD123457',
-      'PaymentMethod': null,  // Initially null
-      'TransactionID': 'TXN7891',
-      'Status': 'processing',
-      'Items': [
-        {'ItemName': 'Pizza', 'ItemQuantity': 1, 'Price': 8.50},
-        {'ItemName': 'Coke', 'ItemQuantity': 2, 'Price': 3.00},
-        {'ItemName': 'Garlic Bread', 'ItemQuantity': 1, 'Price': 5.00},
-      ],
-      'IsDelivered': false,
-      'PhoneNumber': '987-654-3210',
-    },
-    {
-      'OrderID': 'ORD123458',
-      'PaymentMethod': null,  // Initially null
-      'TransactionID': 'TXN7892',
-      'Status': 'processing',
-      'Items': [
-        {'ItemName': 'Pasta', 'ItemQuantity': 1, 'Price': 6.00},
-      ],
-      'IsDelivered': false,
-      'PhoneNumber': '555-123-4567',
-    },
-    {
-      'OrderID': 'ORD123459',
-      'PaymentMethod': null,  // Initially null
-      'TransactionID': 'TXN7893',
-      'Status': 'processing',
-      'Items': [
-        {'ItemName': 'Sushi', 'ItemQuantity': 2, 'Price': 15.00},
-        {'ItemName': 'Miso Soup', 'ItemQuantity': 1, 'Price': 5.00},
-      ],
-      'IsDelivered': false,
-      'PhoneNumber': '222-333-4444',
-    },
-    {
-      'OrderID': 'ORD123460',
-      'PaymentMethod': null,  // Initially null
-      'TransactionID': 'TXN7894',
-      'Status': 'processing',
-      'Items': [
-        {'ItemName': 'Chicken Curry', 'ItemQuantity': 1, 'Price': 10.00},
-        {'ItemName': 'Rice', 'ItemQuantity': 2, 'Price': 3.50},
-      ],
-      'IsDelivered': false,
-      'PhoneNumber': '555-666-7777',
-    },
-    {
-      'OrderID': 'ORD123461',
-      'PaymentMethod': null,  // Initially null
-      'TransactionID': 'TXN7895',
-      'Status': 'processing',
-      'Items': [
-        {'ItemName': 'Steak', 'ItemQuantity': 1, 'Price': 25.00},
-        {'ItemName': 'Mashed Potatoes', 'ItemQuantity': 1, 'Price': 5.00},
-      ],
-      'IsDelivered': false,
-      'PhoneNumber': '888-999-0000',
-    },
-  ];
+class MyorderState extends State<UserorderList> {
+  late Client client;
+  late Databases database;
+
+  List<Map<String, dynamic>> cartItems = [];
+  bool isLoading = false;
+  double totalAmount = 0.0;
 
   @override
   void initState() {
     super.initState();
-    // Simulate fetching payment methods dynamically (e.g., from an API)
-    fetchPaymentMethods();
+
+    client = Client()
+      ..setEndpoint(
+          'https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
+      ..setProject('676506150033480a87c5'); // Replace with your project ID
+
+    database = Databases(client);
+
+    fetchCartData();
   }
 
-  // Fetch payment method based on order
-  Future<void> fetchPaymentMethods() async {
-    await Future.delayed(Duration(seconds: 2));  // Simulate API call delay
+  Future<void> fetchCartData() async {
     setState(() {
-      // Here you would update the payment methods based on your data
-      for (var order in orders) {
-        // For example, you can assign payment methods dynamically:
-        if (order['OrderID'] == 'ORD123456') {
-          order['PaymentMethod'] = 'bKash';
-        } else if (order['OrderID'] == 'ORD123457') {
-          order['PaymentMethod'] = 'Nagad';
-        } else if (order['OrderID'] == 'ORD123458') {
-          order['PaymentMethod'] = 'Rocket';
-        } else if (order['OrderID'] == 'ORD123459') {
-          order['PaymentMethod'] = 'Credit Card';
-        } else if (order['OrderID'] == 'ORD123460') {
-          order['PaymentMethod'] = 'PayPal';
-        } else {
-          order['PaymentMethod'] = 'Cash on Delivery';
-        }
-      }
+      isLoading = true; // Show the progress bar when data is being fetched
     });
-  }
 
-  // Future<void> _reloadOrder() async {
-  //   setState(() {
-  //     isLoading = true; // Set loading state to true
-  //   });
-  //   await fetchOrder(); // Reload data
-  // }
+    try {
+      // Fetch all documents from Appwrite
+      final response = await database.listDocuments(
+        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+        collectionId: '679fb9fb0004c6321d63', // Replace with your collection ID
+      );
+
+      setState(() {
+        cartItems = response.documents.map((doc) {
+          return {
+            'documentId': doc.$id,
+            'paymentMethod': doc.data['paymentMethod'],
+            'TotalAmount':
+                double.tryParse(doc.data['TotalAmount'].toString()) ??
+                    0.0, // Ensure it's a double
+            'name': doc.data['Name'] ?? 'No Name', // Add the 'Name' field here
+            'TnxId': doc.data['TnxId'],
+            'Email': doc.data['Email'],
+            'OrderItemsList': doc.data['OrderItemsList'] ?? [],
+            'orderItemsQuantity': doc.data['orderItemsQuantity'] ?? [],
+            'orderItemsPrices': doc.data['orderItemsPrices'] ?? [],
+          };
+        }).toList();
+
+        // Recalculate the total amount
+        totalAmount = cartItems.fold(
+            0.0,
+            (sum, item) =>
+                sum +
+                (item['TotalAmount'] ?? 0.0)); // Use the 'TotalAmount' field
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error fetching cart: $e')));
+    } finally {
+      setState(() {
+        isLoading = false; // Hide the progress bar after the data is fetched
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,20 +81,8 @@ class ManageOrderState extends State<ManageOrder> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh), // Reload icon
-            onPressed: null, // Call reload function
-          ),
-        ],
         title: Text(
-          'Manage Order',
+          'My Orders',
           style: TextStyle(color: Colors.black),
         ),
       ),
@@ -150,144 +91,80 @@ class ManageOrderState extends State<ManageOrder> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                itemCount: orders.length,
-                itemBuilder: (context, index) {
-                  final order = orders[index];
-                  final List items = order['Items'] ?? [];
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : cartItems.isEmpty
+                      ? Center(child: Text('No Orders Available'))
+                      : ListView.builder(
+                          itemCount: cartItems.length,
+                          itemBuilder: (context, index) {
+                            final order = cartItems[index];
+                            final List orderItems =
+                                order['OrderItemsList'] ?? [];
+                            final List orderItemsQuantity =
+                                order['orderItemsQuantity'] ?? [];
+                            final List orderItemsPrices =
+                                order['orderItemsPrices'] ?? [];
 
-                  // Calculate total cost for the current order
-                  double orderTotalCost = items.fold(0.0, (sum, item) {
-                    double itemTotalPrice = (item['Price'] ?? 0.0) * (item['ItemQuantity'] ?? 1);
-                    return sum + itemTotalPrice;
-                  });
-                  String status = order['Status'] ?? 'Unknown';
-                  String phoneNumber = order['PhoneNumber'] ?? 'Not available';
-                  String paymentMethod = order['PaymentMethod'] ?? 'Not specified'; // Use fetched payment method
-
-                  return Card(
-                    elevation: 5,
-                    margin: EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Order ID: ${order['OrderID']}',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold)),
-                          Text('Payment Method: $paymentMethod'),
-                          Text('Transaction ID: ${order['TransactionID']}'),
-                          SizedBox(height: 10),
-                          Text('Status: $status'),
-                          SizedBox(height: 10),
-                          Text('Phone Number: $phoneNumber'),
-                          SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: order['DeliveryRoom'] != null
-                                ? Text(
-                              'Deliver to Room No: ${order['DeliveryRoom']}',
-                              style: TextStyle(fontStyle: FontStyle.italic),
-                            )
-                                : Container(),
-                          ),
-                          SizedBox(height: 10),
-                          Divider(),
-                          Text('Items:', style: TextStyle(fontWeight: FontWeight.bold)),
-                          Column(
-                            children: items.map<Widget>((item) {
-                              double itemTotalPrice = (item['Price'] ?? 0.0) * (item['ItemQuantity'] ?? 1);
-
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Text(
-                                  '• ${item['ItemName']} (${item['ItemQuantity']}) = BDT (${item['Price'].toStringAsFixed(2)} x ${item['ItemQuantity']}) = BDT ${itemTotalPrice.toStringAsFixed(2)}',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          Divider(),
-                          Text(
-                            'Total Price: \BDT ${orderTotalCost.toStringAsFixed(2)}',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 10),
-
-                          // Checkbox for delivery status
-                          CheckboxListTile(
-                            title: Text('Mark as Delivered'),
-                            value: order['IsDelivered'],
-                            onChanged: (order['Status'] == 'Confirmed') // Enable checkbox only when status is "Confirmed"
-                                ? (bool? value) {
-                              setState(() {
-                                order['IsDelivered'] = value ?? false;
-                                order['Status'] = value ?? false ? 'Delivered' : 'Confirmed';
-                              });
+                            double orderTotalCost = 0.0;
+                            for (int i = 0; i < orderItems.length; i++) {
+                              double itemPrice = double.tryParse(
+                                      orderItemsPrices[i].toString()) ??
+                                  0.0;
+                              int itemQuantity = orderItemsQuantity[i] ?? 0;
+                              double itemTotalPrice = itemPrice * itemQuantity;
+                              orderTotalCost += itemTotalPrice;
                             }
-                                : null,
-                          ),
 
-                          SizedBox(height: 10),
-
-                          // Align the Confirm button at the bottom right of the card
-                          Align(
-                            alignment: Alignment.bottomRight,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                _showConfirmationDialog(context, order);
-                              },
-                              child: Text('Confirm Order'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                            return Card(
+                              elevation: 5,
+                              margin: EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Transaction ID: ${order['TnxId']}',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                        'Payment Method: ${order['paymentMethod']}'),
+                                    SizedBox(height: 10),
+                                    Text('Customer Name: ${order['name']}'),
+                                    SizedBox(height: 10),
+                                    Divider(),
+                                    Text('',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    Divider(),
+                                    Text(
+                                      'Total Price: BDT ${order['TotalAmount'].toStringAsFixed(2)}', // Ensure TotalAmount is a double
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+            Text(
+              'Total Amount: BDT ${totalAmount.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
+            SizedBox(height: 10),
           ],
         ),
       ),
-    );
-  }
-
-  // Function to show the confirmation dialog
-  Future<void> _showConfirmationDialog(BuildContext context, Map<String, dynamic> order) {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // Prevents closing the dialog by tapping outside
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm Order'),
-          content: Text('Do you want to confirm this order?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('No'),
-              onPressed: () {
-                setState(() {
-                  order['Status'] = 'Processing';  // Set status to Processing
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Yes'),
-              onPressed: () {
-                setState(() {
-                  order['Status'] = 'Confirmed';  // Set status to Confirmed if not delivered
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

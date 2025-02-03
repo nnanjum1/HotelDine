@@ -1,4 +1,7 @@
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Myorder extends StatefulWidget {
   @override
@@ -6,39 +9,79 @@ class Myorder extends StatefulWidget {
 }
 
 class MyorderState extends State<Myorder> {
-  List<Map<String, dynamic>> orders = [
-    {
-      'OrderID': 'ORD123456',
-      'TransactionID': 'TXN7890',
-      'PaymentMethod': 'Bkash', // Added PaymentMethod
-      'Status': 'Confirmed',
-      'Items': [
-        {'ItemName': 'Burger', 'ItemQuantity': 2, 'Price': 12.99},
-        {'ItemName': 'Fries', 'ItemQuantity': 1, 'Price': 4.50},
-      ],
-      'DeliveryRoom': '1001',
-    },
-    {
-      'OrderID': 'ORD123457',
-      'TransactionID': 'TXN7891',
-      'PaymentMethod': 'Nagad', // Added PaymentMethod
-      'Status': 'Delivered',
-      'Items': [
-        {'ItemName': 'Pizza', 'ItemQuantity': 1, 'Price': 8.50},
-        {'ItemName': 'Coke', 'ItemQuantity': 2, 'Price': 3.00},
-        {'ItemName': 'Garlic Bread', 'ItemQuantity': 1, 'Price': 5.00},
-      ],
-    },
-    {
-      'OrderID': 'ORD123458',
-      'TransactionID': 'TXN7892',
-      'PaymentMethod': 'Rocket', // Added PaymentMethod
-      'Status': 'Confirmed',
-      'Items': [
-        {'ItemName': 'Pasta', 'ItemQuantity': 1, 'Price': 6.00},
-      ],
-    },
-  ];
+  late Client client;
+  late Databases database;
+
+  List<Map<String, dynamic>> cartItems = [];
+  bool isLoading = false;
+  double totalAmount = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    client = Client()
+      ..setEndpoint(
+          'https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
+      ..setProject('676506150033480a87c5'); // Replace with your project ID
+
+    database = Databases(client);
+
+    fetchCartData();
+  }
+
+  Future<void> fetchCartData() async {
+    setState(() {
+      isLoading = true; // Show the progress bar when data is being fetched
+    });
+
+    try {
+      // Get the current user from Firebase
+      firebase_auth.User? user =
+          firebase_auth.FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        Fluttertoast.showToast(msg: 'Please log in to view cart data');
+        return;
+      }
+
+      // Fetch all documents from Appwrite
+      final response = await database.listDocuments(
+        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+        collectionId: '679fb9fb0004c6321d63', // Replace with your collection ID
+      );
+
+      // Filter documents based on the current user's email
+      setState(() {
+        cartItems = response.documents.where((doc) {
+          return doc.data['Email'] ==
+              user.email; // Match email field in Appwrite with Firebase email
+        }).map((doc) {
+          return {
+            'documentId': doc.$id,
+            'paymentMethod': doc.data['paymentMethod'],
+            'TotalAmount': doc.data['TotalAmount'],
+            'name': doc.data['Name'] ?? 'No Name', // Add the 'Name' field here
+            'TnxId': doc.data['TnxId'],
+          };
+        }).toList();
+
+        // Recalculate the total amount
+        totalAmount = cartItems.fold(
+            0.0,
+            (sum, item) =>
+                sum +
+                (item['TotalAmount'] ?? 0.0)); // Use the 'TotalAmount' field
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error fetching cart: $e')));
+    } finally {
+      setState(() {
+        isLoading = false; // Hide the progress bar after the data is fetched
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,82 +92,84 @@ class MyorderState extends State<Myorder> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                itemCount: orders.length,
-                itemBuilder: (context, index) {
-                  final order = orders[index];
-                  final List items = order['Items'] ?? []; // Handle null by providing an empty list
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: cartItems.length,
+                      itemBuilder: (context, index) {
+                        final order = cartItems[index];
+                        final List orderItems = order['OrderItemsList'] ?? [];
+                        final List orderItemsQuantity =
+                            order['orderItemsQuantity'] ?? [];
+                        final List orderItemsPrices =
+                            order['orderItemsPrices'] ?? [];
 
-                  // Fetch the payment method for the current order
-                  String paymentMethod = order['PaymentMethod'] ?? 'Not specified'; // Handle null
+                        double orderTotalCost =
+                            orderItems.fold(0.0, (sum, item) {
+                          int itemIndex = orderItems.indexOf(item);
+                          double itemTotalPrice =
+                              (orderItemsPrices[itemIndex] ?? 0.0) *
+                                  (orderItemsQuantity[itemIndex] ?? 1);
+                          return sum + itemTotalPrice;
+                        });
 
-                  // Debugging: print payment method for the current order
-                  print("Order ${order['OrderID']} Payment Method: $paymentMethod");
-
-                  // Calculate total cost for the current order
-                  double orderTotalCost = items.fold(0.0, (sum, item) {
-                    double itemTotalPrice = (item['Price'] ?? 0.0) * (item['ItemQuantity'] ?? 1);
-                    return sum + itemTotalPrice;
-                  });
-                  String status = order['Status'] ?? 'Unknown';
-
-                  return Card(
-                    elevation: 5,
-                    margin: EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Order ID: ${order['OrderID']}',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold)),
-                          Text('Payment Method: $paymentMethod'), // Payment method before transaction ID
-                          Text('Transaction ID: ${order['TransactionID']}'),
-                          SizedBox(height: 10),
-                          Text('Status: $status'),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: order['DeliveryRoom'] != null
-                                ? Text(
-                              'Deliver to Room No: ${order['DeliveryRoom']}',
-                              style: TextStyle(fontStyle: FontStyle.italic),
-                            )
-                                : Container(), // Empty container if room number is not available
-                          ),
-                          SizedBox(height: 10),
-                          Divider(),
-                          Text('Items:', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: items.length,
-                            itemBuilder: (context, itemIndex) {
-                              final item = items[itemIndex];
-                              double itemTotalPrice = (item['Price'] ?? 0.0) * (item['ItemQuantity'] ?? 1);
-
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Text(
-                                  '• ${item['ItemName']} (${item['ItemQuantity']}) = BDT (${item['Price'].toStringAsFixed(2)} x ${item['ItemQuantity']}) = BDT ${itemTotalPrice.toStringAsFixed(2)}',
-                                  style: TextStyle(fontSize: 14),
+                        return Card(
+                          elevation: 5,
+                          margin: EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Transaction ID: ${order['TnxId']}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
-                              );
-                            },
+                                Text(
+                                    'Payment Method: ${order['paymentMethod']}'),
+                                SizedBox(height: 10),
+                                Text('Customer Name: ${order['name']}'),
+                                SizedBox(height: 10),
+                                Text(
+                                    'Total Amount: BDT ${order['TotalAmount']}'),
+                                Divider(),
+                                Text('Items:',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: orderItems.length,
+                                  itemBuilder: (context, itemIndex) {
+                                    final item = orderItems[itemIndex];
+                                    final quantity =
+                                        orderItemsQuantity[itemIndex];
+                                    final price = orderItemsPrices[itemIndex];
+                                    double itemTotalPrice =
+                                        (price ?? 0.0) * (quantity ?? 1);
+
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4),
+                                      child: Text(
+                                        '• ${item} (${quantity}) = BDT (${price.toStringAsFixed(2)} x $quantity) = BDT ${itemTotalPrice.toStringAsFixed(2)}',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Divider(),
+                                Text(
+                                  'Total Price: BDT ${order['TotalAmount']}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
                           ),
-                          Divider(),
-                          Text(
-                            'Total Price: \BDT ${orderTotalCost.toStringAsFixed(2)}',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

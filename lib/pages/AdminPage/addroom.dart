@@ -208,7 +208,8 @@ class _AddRoom extends State<AddRoom> {
                       content: TextField(
                         controller: numberController,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(hintText: 'Enter at least 2 digits'),
+                        decoration: InputDecoration(hintText: 'Enter at least 2 digits',
+                            hintStyle: TextStyle(color: Colors.grey[500])),
                       ),
                       actions: [
                         TextButton(

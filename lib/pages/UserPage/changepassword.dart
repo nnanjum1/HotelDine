@@ -62,7 +62,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
     } catch (e) {
       setState(() {
-        errorMessage = "Error: ${e.toString()}";
+        errorMessage = "Current password do not match";
+        print("Error: ${e.toString()}");
       });
     }
   }
@@ -85,6 +86,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               obscureText: !isCurrentPasswordVisible,
               decoration: InputDecoration(
                 hintText: 'Current Password',
+                hintStyle: TextStyle(color: Colors.grey,),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
@@ -93,6 +95,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(isCurrentPasswordVisible ? Icons.visibility_off : Icons.visibility),
+                  color: Colors.grey,
                   onPressed: () {
                     setState(() {
                       isCurrentPasswordVisible = !isCurrentPasswordVisible;
@@ -109,6 +112,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               obscureText: !isNewPasswordVisible,
               decoration: InputDecoration(
                 hintText: 'New Password',
+                hintStyle: TextStyle(color: Colors.grey,),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
@@ -117,6 +121,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(isNewPasswordVisible ? Icons.visibility_off : Icons.visibility),
+                  color: Colors.grey,
                   onPressed: () {
                     setState(() {
                       isNewPasswordVisible = !isNewPasswordVisible;
@@ -133,6 +138,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               obscureText: !isConfirmPasswordVisible,
               decoration: InputDecoration(
                 hintText: 'Confirm New Password',
+                hintStyle: TextStyle(color: Colors.grey,),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 border: OutlineInputBorder(
@@ -141,6 +147,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility),
+                  color: Colors.grey,
                   onPressed: () {
                     setState(() {
                       isConfirmPasswordVisible = !isConfirmPasswordVisible;
@@ -162,7 +169,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             // Update Password Button
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
+                backgroundColor: Color(0xFF19A7FE),
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(

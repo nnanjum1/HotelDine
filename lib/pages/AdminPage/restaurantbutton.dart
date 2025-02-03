@@ -15,81 +15,104 @@ class RestaurantButton extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leading: IconButton(onPressed: (){
-          Navigator.pop(context);
-        }, icon: Icon(Icons.arrow_back)),
-
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back)),
         title: Text('Home'),
       ),
       body: Column(
-
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 73, vertical: 60),
-            child: Text(
-              'Admin Dashboard', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold,),),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Admin Dashboard',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '(Restaurant)',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
-
-          SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>  AddItem()),);
-
-          },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF19A7FE),
-              padding: EdgeInsets.symmetric( vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          SizedBox(
+            width: 316,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddItem()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF19A7FE),
+                padding: EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                'Add Item',
+                style: TextStyle(fontSize: 14, color: Colors.white),
               ),
             ),
-            child: Text('Add Item',style: TextStyle(fontSize: 14,color: Colors.white),),
-
           ),
-          ),
-
           SizedBox(height: 25),
-          SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>  ViewItem()),);
-
-          },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF19A7FE),
-              padding: EdgeInsets.symmetric( vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          SizedBox(
+            width: 316,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ViewItem()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF19A7FE),
+                padding: EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                'View Item',
+                style: TextStyle(fontSize: 14, color: Colors.white),
               ),
             ),
-            child: Text('View Item',style: TextStyle(fontSize: 14,color: Colors.white),),
-
           ),
-          ),
-
-
-
-
           SizedBox(height: 25),
-          SizedBox(width: 316,child:
-          ElevatedButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context) =>ManageOrder(),));
-          },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF19A7FE),
-              padding: EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          SizedBox(
+            width: 316,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UserorderList(),
+                    ));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF19A7FE),
+                padding: EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                'Manage Order',
+                style: TextStyle(fontSize: 14, color: Colors.white),
               ),
             ),
-            child: Text('Manage Order',style: TextStyle(fontSize: 14,color: Colors.white),),
-
-          ),
           ),
         ],
-
       ),
-
-
-
     );
   }
 }
