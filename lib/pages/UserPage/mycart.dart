@@ -1,6 +1,4 @@
 import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/models.dart';
-import 'package:appwrite/models.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hoteldineflutter/pages/UserPage/availablefoods.dart';
@@ -124,6 +122,34 @@ class MycartState extends State<Mycart> {
     });
   }
 
+  // Add this method to show the confirmation dialog
+  void showDeleteConfirmationDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Are you sure?'),
+          content: Text('Do you want to delete this item from the cart?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                removeItemFromCart(index); // Proceed with removal
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void removeItemFromCart(int index) async {
     try {
       // Get the document ID of the item you want to delete
@@ -141,10 +167,6 @@ class MycartState extends State<Mycart> {
         totalAmount -= cartItems[index]['price'] * cartItems[index]['quantity'];
         cartItems.removeAt(index);
       });
-
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Item removed from cart and database successfully')));
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error deleting item: $e')));
@@ -253,25 +275,14 @@ class MycartState extends State<Mycart> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('BDT ${item['price']}'),
-                          Row(
-                            children: [
-                              IconButton(
-                                  icon: Icon(Icons.remove_circle_outline,
-                                      color: Colors.red),
-                                  onPressed: () => updateQuantity(index, -1)),
-                              Text('${item['quantity']}',
-                                  style: TextStyle(fontSize: 18)),
-                              IconButton(
-                                  icon: Icon(Icons.add_circle_outline,
-                                      color: Colors.green),
-                                  onPressed: () => updateQuantity(index, 1)),
-                            ],
-                          ),
+                          Text('X ${item['quantity']}',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.red)),
                         ],
                       ),
                       trailing: IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => removeItemFromCart(index)),
+                          onPressed: () => showDeleteConfirmationDialog(index)),
                     );
                   },
                 ),
