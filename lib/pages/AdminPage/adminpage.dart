@@ -155,61 +155,63 @@ class adminPage extends StatelessWidget {
               ),
             ),
 
+              SizedBox(height: 16,),
 
-          ElevatedButton(
-          onPressed: () async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Clear login session
+            SizedBox(width: 325, child: ElevatedButton(
+              onPressed: () async {
+                bool confirmLogout = await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text("Confirm Logout"),
+                      content: const Text("Are you sure you want to log out?"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false), // Cancel
+                          child: const Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true), // Confirm
+                          child: const Text("Logout", style: TextStyle(color: Colors.red),),
+                        ),
+                      ],
+                    );
+                  },
+                ) ?? false; // Default to false if dialog is dismissed
 
-    await FirebaseAuth.instance.signOut(); // Sign out from Firebase
+                if (confirmLogout) {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear(); // Clear login session
+                  await FirebaseAuth.instance.signOut(); // Sign out from Firebase
 
-    Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => login()), // Redirect to login page
-    );
-    },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFE70A0A),
-        padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(26),
-        ),
-        minimumSize: const Size(double.infinity, 36),
-      ),
-      child: const Text(
-        'Log out',
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    ),
-
-
-    SizedBox(height: 16,),
-            BottomNavigationBar(
-              currentIndex: 0, // Keep track of selected tab
-              backgroundColor: Color(0xFFE4E4E4),
-              onTap: (index) {
-                if (index == 1) { // Hotel tab clicked
-                  Navigator.push(
+                  // Navigate to login page
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => HotelButton()), // Navigate to HotelButton
-                  );
-                } else if (index == 2) { // Restaurant tab clicked
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => RestaurantButton()), // Navigate to RestaurantButton
+                    MaterialPageRoute(builder: (context) => login()),
                   );
                 }
               },
-              items: [
-                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-                BottomNavigationBarItem(icon: Icon(Icons.apartment), label: 'Hotel'),
-                BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded), label: 'Restaurant'),
-              ],
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE70A0A),
+                padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(26),
+                ),
+                minimumSize: const Size(double.infinity, 36),
+              ),
+              child: const Text(
+                'Log out',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             ),
+
+            )
+            ,
+
 
 
           ],

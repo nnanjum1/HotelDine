@@ -87,14 +87,12 @@ class ChooseRoomState extends State<ChooseRoom> {
     final List<Widget> body = [
       _homePage(),
       Center(child: Text('Booked Page')),
-      Center(child: Text('Saved Page')),
       myprofile(),
     ];
 
     final List<String> appBarTitles = [
       'Choose Room',
       'Booked Rooms',
-      'Saved',
       'Profile',
     ];
 
@@ -125,7 +123,6 @@ class ChooseRoomState extends State<ChooseRoom> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.book), label: 'Booked'),
-          NavigationDestination(icon: Icon(Icons.save), label: 'Saved'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
         ],
         selectedIndex: currentIndex,

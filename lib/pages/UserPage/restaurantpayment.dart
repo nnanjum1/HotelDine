@@ -11,6 +11,8 @@ class Paynow extends StatefulWidget {
 class _PaynowState extends State<Paynow> {
   String? _selectedPaymentMethod;
 
+  bool isRoomDeliveryChecked = false; // To track if the checkbox is checked
+  TextEditingController roomNumberController = TextEditingController();
   final TextEditingController _transactionIdController = TextEditingController();
 
   @override
@@ -151,40 +153,90 @@ class _PaynowState extends State<Paynow> {
               SizedBox(height: 20),
 
 
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    String transactionId = _transactionIdController.text;
-                    if (_selectedPaymentMethod == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Please select a payment method')),
-                      );
-                    } else if (transactionId.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Please enter a Transaction ID')),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Payment method: $_selectedPaymentMethod\nTransaction ID: $transactionId'),
-                        ),
-                      );
-                    }
+                // Checkbox for room delivery
+                CheckboxListTile(
+                  title: Text('Room Delivery'),
+                  value: isRoomDeliveryChecked,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isRoomDeliveryChecked = value ?? false;
+                    });
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFBB8506), // Custom button color
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                ),
+
+                // Room number input field (enabled only if checkbox is checked)
+                TextFormField(
+                  controller: roomNumberController,
+                  enabled: isRoomDeliveryChecked, // Enable/disable based on checkbox state
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Room number eg. 1001',
+                    labelStyle: TextStyle(color: Color(0xFFC1C1CE)),
+
+                    filled: true,
+                    fillColor: Color(0xFFFEF7F7), // Set the background color
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFB9B1B1)), // Border color when not focused
+                      borderRadius: BorderRadius.circular(5),
                     ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFB9B1B1)), // Border color when focused
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFB9B1B1)), // Border color when enabled (unfocused)
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   ),
-                  child: Text(
-                    "Order Now",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
+                  style: TextStyle(color: Colors.black),
+                ),
+
+              SizedBox(height: 20),
+
+
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                String transactionId = _transactionIdController.text;
+                String roomNumber = roomNumberController.text;
+
+                // Check if room delivery is selected and room number is empty
+                if (isRoomDeliveryChecked && roomNumber.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please enter a room number for delivery')),
+                  );
+                } else if (_selectedPaymentMethod == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please select a payment method')),
+                  );
+                } else if (transactionId.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please enter a Transaction ID')),
+                  );
+                } else {
+                  // Show payment details
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Payment method: $_selectedPaymentMethod\nTransaction ID: $transactionId\nRoom Number: $roomNumber'),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFBB8506), // Custom button color
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
+              child: Text(
+                "Order Now",
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ),
+          ),
             ],
           ),
         ),

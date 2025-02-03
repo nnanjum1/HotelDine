@@ -40,13 +40,30 @@ class _ViewRoomState extends State<ViewRoom> {
       filteredRooms = query.isEmpty
           ? rooms
           : rooms.where((room) {
-              return room['category']
-                      .toLowerCase()
-                      .contains(query.toLowerCase()) ||
-                  room['roomNumber'].toString().contains(query);
-            }).toList();
+        // Convert the query to lowercase for case-insensitive matching
+        String lowerCaseQuery = query.toLowerCase();
+        String category = room['category'].toLowerCase();
+        String roomNumber = room['roomNumber'].toString();
+
+        // Split the query into words (the first word and remaining words)
+        List<String> queryWords = lowerCaseQuery.split(' ');
+        String firstWord = queryWords.first; // First word of the query
+        List<String> remainingWords = queryWords.skip(1).toList(); // Remaining words in the query
+
+        // Check if the first word matches the first word in the category
+        bool firstWordMatches = category.split(' ').first.contains(firstWord);
+
+        // If there are remaining words, ensure they are also present in the category
+        bool remainingWordsMatch = remainingWords.every((word) {
+          return category.contains(word);
+        });
+
+        // Return true if first word matches and all remaining words match, or if room number matches
+        return (firstWordMatches && remainingWordsMatch) || roomNumber.contains(query);
+      }).toList();
     });
   }
+
 
   Future<void> fetchRooms() async {
     try {
@@ -114,6 +131,7 @@ class _ViewRoomState extends State<ViewRoom> {
               onChanged: _filterRooms,
               decoration: InputDecoration(
                 hintText: 'Search by room number or category',
+                hintStyle: TextStyle(color: Colors.grey[500]),
                 filled: true,
                 fillColor: const Color(0xFFDCDCDC),
                 prefixIcon: Icon(Icons.search, color: Colors.grey),

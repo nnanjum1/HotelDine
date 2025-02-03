@@ -27,7 +27,7 @@ class RestaurantButton extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 73, vertical: 60),
             child: Text(
-              'Select your option', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold,),),
+              'Admin Dashboard', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold,),),
           ),
 
           SizedBox(width: 316,child:
@@ -87,28 +87,7 @@ class RestaurantButton extends StatelessWidget {
         ],
 
       ),
-      bottomNavigationBar:   BottomNavigationBar(
-        currentIndex: 2, // Keep track of selected tab
-        backgroundColor: Color(0xFFE4E4E4),
-        onTap: (index) {
-          if (index == 1) { // Hotel tab clicked
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HotelButton()), // Navigate to HotelButton
-            );
-          } else if (index == 0) { // Restaurant tab clicked
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => adminPage()), // Navigate to RestaurantButton
-            );
-          }
-        },
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.apartment), label: 'Hotel'),
-          BottomNavigationBarItem(icon: Icon(Icons.restaurant_rounded), label: 'Restaurant'),
-        ],
-      ),
+
 
 
     );

@@ -235,35 +235,7 @@ class Homepage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     // Logout button
-                ElevatedButton(
-                  onPressed: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.clear(); // Clear login session
 
-                    await FirebaseAuth.instance.signOut(); // Sign out from Firebase
-
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => login()), // Redirect to login page
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE70A0A),
-                    padding: const EdgeInsets.symmetric(horizontal: 47, vertical: 3),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(26),
-                    ),
-                    minimumSize: const Size(double.infinity, 36),
-                  ),
-                  child: const Text(
-                    'Log out',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
 
                 ],
                 ),
