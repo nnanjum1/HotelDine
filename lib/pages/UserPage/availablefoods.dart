@@ -116,10 +116,6 @@ class AvailablefoodsState extends State<Availablefoods> {
           'Email': user.email ?? '', // Set the current user's email
         },
       );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Item added to cart successfully')),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error adding item to cart: $e')),
@@ -341,7 +337,7 @@ class AvailablefoodsState extends State<Availablefoods> {
                                               // Show a toast when the button is pressed
                                               Fluttertoast.showToast(
                                                 msg:
-                                                    'Item added to cart! visit cart',
+                                                    '${item['itemName']} added to cart!',
                                                 toastLength: Toast.LENGTH_SHORT,
                                                 gravity: ToastGravity.BOTTOM,
                                                 backgroundColor: Colors.black,
