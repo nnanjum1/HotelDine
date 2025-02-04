@@ -117,6 +117,7 @@ class _RoomSelectedState extends State<RoomSelected> {
           'Email': email,
           'PaymentMethod': _selectedPaymentMethod ?? '',
           'TransactionID': _transactionIdController.text,
+          'Status': 'Pending',
         },
       );
 

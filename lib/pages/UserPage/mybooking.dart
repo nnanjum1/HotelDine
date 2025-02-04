@@ -66,6 +66,7 @@ class _MyBookingState extends State<MyBooking> {
             'RoomNumber': doc.data['RoomNumber'],
             'PaymentMethod': doc.data['PaymentMethod'],
             'TransactionID': doc.data['TransactionID'],
+            'Status': doc.data['Status'],
             'Email': doc.data['Email'],
           });
 
@@ -107,6 +108,10 @@ class _MyBookingState extends State<MyBooking> {
                         itemCount: cartItems.length,
                         itemBuilder: (context, index) {
                           final item = cartItems[index];
+                          Color statusColor = item['Status'] == 'Confirmed'
+                              ? Colors.green
+                              : Colors.brown;
+
                           return Card(
                             margin: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 20),
@@ -119,12 +124,34 @@ class _MyBookingState extends State<MyBooking> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Name: ${item['Name']}',
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Name: ${item['Name']}',
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: statusColor,
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                        child: Text(
+                                          item['Status'],
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                  const SizedBox(height: 4),
                                   Text('Phone: ${item['Phone']}'),
                                   Text('Check-in: ${item['Check_in_Date']}'),
                                   Text('Check-out: ${item['Check_out_date']}'),
