@@ -100,8 +100,7 @@ class _DeleteRoomState extends State<DeleteRoom> {
         return AlertDialog(
           title: const Text('Confirm Delete'),
           content: Text(
-              'Are you sure you want to delete room #${widget
-                  .roomNumber}? This action cannot be undone.'),
+              'Are you sure you want to delete room #${widget.roomNumber}? This action cannot be undone.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(), // Close dialog
@@ -112,8 +111,10 @@ class _DeleteRoomState extends State<DeleteRoom> {
                 Navigator.of(context).pop(); // Close dialog
                 deleteRoom(); // Proceed with deletion
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Delete',),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -132,80 +133,81 @@ class _DeleteRoomState extends State<DeleteRoom> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : roomData == null
-          ? const Center(child: Text('Room not found'))
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              color:  Color(0xFFCFDFEF),
-              margin: const EdgeInsets.all(8.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0), // Rounded edges
-              ),
-              elevation: 4,
-              // Shadow
-              child: Padding(
-                padding: const EdgeInsets.all(20.0), // Inner padding
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Room Number: ${roomData!['RoomNumber']}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+              ? const Center(child: Text('Room not found'))
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Card(
+                        color: Color(0xFFCFDFEF),
+                        margin: const EdgeInsets.all(8.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(15.0), // Rounded edges
+                        ),
+                        elevation: 4,
+                        // Shadow
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0), // Inner padding
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Room Number: ${roomData!['RoomNumber']}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Room Name: ${roomData!['RoomName']}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Description: ${roomData!['RoomDescription']}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Price: BDT ${roomData!['price']}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Room Name: ${roomData!['RoomName']}',
-                      style: const TextStyle(
-                        fontSize: 18,
+                      const SizedBox(height: 25),
+                      SizedBox(
+                        width: double
+                            .infinity, // Ensures the button matches the card's width
+                        child: ElevatedButton(
+                          onPressed: showDeleteConfirmation,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          child: const Text(
+                            'Delete Room',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Description: ${roomData!['RoomDescription']}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Price: BDT ${roomData!['price']}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 25),
-            SizedBox(
-              width: double.infinity, // Ensures the button matches the card's width
-              child: ElevatedButton(
-                onPressed: showDeleteConfirmation,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    ],
                   ),
                 ),
-                child: const Text(
-                  'Delete Room',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-
-          ],
-        ),
-      ),
     );
   }
 }

@@ -1,10 +1,8 @@
-import 'dart:ffi';
-
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:fluttertoast/fluttertoast.dart';
-import '../Database/appwriteConfig.dart';
+import 'package:hoteldineflutter/pages/UserPage/availablefoods.dart';
 
 class Paynow extends StatefulWidget {
   final List<Map<String, dynamic>> cartItems;
@@ -30,76 +28,16 @@ class _PaynowState extends State<Paynow> {
       TextEditingController();
 
   bool isLoading = false;
-  List<Map<String, dynamic>> updatedCartItems = [];
 
   @override
   void initState() {
     super.initState();
 
     client = Client()
-      ..setEndpoint(
-          'https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-      ..setProject('676506150033480a87c5'); // Replace with your project ID
+      ..setEndpoint('https://cloud.appwrite.io/v1')
+      ..setProject('676506150033480a87c5');
 
     database = Databases(client);
-    fetchCartData();
-  }
-
-  Future<void> fetchCartData() async {
-    setState(() {
-      isLoading = true; // Show the progress bar when data is being fetched
-    });
-
-    try {
-      firebase_auth.User? user =
-          firebase_auth.FirebaseAuth.instance.currentUser;
-
-      if (user == null) {
-        Fluttertoast.showToast(msg: 'Please log in to view cart data');
-        return;
-      }
-
-      final response = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
-      );
-
-      List<Map<String, dynamic>> updatedCartItems = [];
-      for (var doc in response.documents) {
-        if (doc.data['Email'] == user.email) {
-          updatedCartItems.add({
-            'documentId': doc.$id,
-            'cartItemName': doc.data['cartItemName'] ?? 'Unknown Item',
-            'price': (doc.data['Price'] as num?)?.toDouble() ?? 0.0,
-            'imageUrl': doc.data['ImageUrl'] ?? '',
-            'quantity': (doc.data['Quantity'] as num?)?.toInt() ?? 1,
-            'Email': doc.data['Email'],
-          });
-        }
-      }
-
-      List<Map<String, dynamic>> mergedCartItems = [];
-      for (var item in updatedCartItems) {
-        int existingIndex = mergedCartItems.indexWhere((existingItem) =>
-            existingItem['cartItemName'] == item['cartItemName']);
-        if (existingIndex == -1) {
-          mergedCartItems.add(item);
-        } else {
-          mergedCartItems[existingIndex]['quantity'] += item['quantity'];
-        }
-      }
-
-      setState(() {
-        this.updatedCartItems = mergedCartItems;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error fetching cart: $e')));
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
   }
 
   Future<void> saveOrderHistory(String transactionId, String roomNumber) async {
@@ -113,20 +51,17 @@ class _PaynowState extends State<Paynow> {
       }
 
       // Extracting item names, quantities, and prices from the cart
-      List<String> orderItemsNames = updatedCartItems.map((item) {
+      List<String> orderItemsNames = widget.cartItems.map((item) {
         return item['cartItemName'] as String;
       }).toList();
 
-      List<int> orderItemsQuantity = updatedCartItems.map((item) {
+      List<int> orderItemsQuantity = widget.cartItems.map((item) {
         return item['quantity'] as int;
       }).toList();
 
-      // Handle null values for price, converting to string (default to '0.0' if null)
-      List<String> orderItemsPrices = updatedCartItems.map((item) {
-        var price = item['price']; // Get the price
-        return price != null
-            ? price.toString()
-            : '0.0'; // If null, default to '0.0'
+      List<String> orderItemsPrices = widget.cartItems.map((item) {
+        var price = item['price'];
+        return price != null ? price.toString() : '0.0';
       }).toList();
 
       // Prepare order data
@@ -136,15 +71,15 @@ class _PaynowState extends State<Paynow> {
         'RoomNumber': roomNumber,
         'TotalAmount': widget.totalAmount,
         'Email': user.email,
-        'OrderItemsList': orderItemsNames, // Storing only item names
-        'orderItemsQuantity': orderItemsQuantity, // Storing quantities
-        'orderItemsPrices': orderItemsPrices, // Storing prices as strings
+        'OrderItemsList': orderItemsNames,
+        'orderItemsQuantity': orderItemsQuantity,
+        'orderItemsPrices': orderItemsPrices,
       };
 
       // Save to database
       await database.createDocument(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679fb9fb0004c6321d63', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679fb9fb0004c6321d63',
         documentId: ID.unique(),
         data: orderData,
       );
@@ -155,42 +90,8 @@ class _PaynowState extends State<Paynow> {
     }
   }
 
-  Future<void> deleteAllCartItems() async {
-    try {
-      firebase_auth.User? user =
-          firebase_auth.FirebaseAuth.instance.currentUser;
-
-      if (user == null) {
-        Fluttertoast.showToast(msg: 'Please log in to delete cart items');
-        return;
-      }
-
-      final response = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8',
-        collectionId: '679e8489002cd468bb6b',
-      );
-
-      for (var doc in response.documents) {
-        if (doc.data['Email'] == user.email) {
-          await database.deleteDocument(
-            databaseId: '67650e170015d7a01bc8',
-            collectionId: '679e8489002cd468bb6b',
-            documentId: doc.$id,
-          );
-        }
-      }
-    } catch (e) {
-      Fluttertoast.showToast(msg: 'Error deleting cart items: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    double totalAmount = updatedCartItems.fold(
-      0.0,
-      (sum, item) => sum + (item['price'] * item['quantity']),
-    );
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -221,7 +122,7 @@ class _PaynowState extends State<Paynow> {
               paymentOption('Nagad'),
               paymentOption('Rocket'),
               SizedBox(height: 20),
-              ...updatedCartItems.map((item) {
+              ...widget.cartItems.map((item) {
                 return ListTile(
                   title: Text(item['cartItemName']),
                   subtitle: Text('BDT ${item['price']} x ${item['quantity']}'),
@@ -230,7 +131,7 @@ class _PaynowState extends State<Paynow> {
               }).toList(),
               SizedBox(height: 20),
               Text(
-                'Total Amount: BDT ${totalAmount.toStringAsFixed(2)}',
+                'Total Amount: BDT ${widget.totalAmount.toStringAsFixed(2)}',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20),
@@ -321,16 +222,30 @@ class _PaynowState extends State<Paynow> {
                         ),
                       );
                     } else {
-                      await saveOrderHistory(transactionId, roomNumber);
-                      await deleteAllCartItems();
+                      setState(() {
+                        isLoading = true;
+                      });
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Payment completed successfully!'),
-                        ),
-                      );
+                      try {
+                        await saveOrderHistory(transactionId, roomNumber);
 
-                      Navigator.pop(context);
+                        // Navigate to AvailableFood page after successful payment
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Availablefoods()),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error processing payment: $e'),
+                          ),
+                        );
+                      } finally {
+                        setState(() {
+                          isLoading = false;
+                        });
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
