@@ -54,6 +54,7 @@ class _UserBookingListState extends State<UserBookingList> {
           'RoomNumber': doc.data['RoomNumber'],
           'PaymentMethod': doc.data['PaymentMethod'],
           'TransactionID': doc.data['TransactionID'],
+          'Status': doc.data['Status'],
           'Email': doc.data['Email'],
         });
 
@@ -72,6 +73,25 @@ class _UserBookingListState extends State<UserBookingList> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> confirmBooking(String documentId) async {
+    try {
+      await database.updateDocument(
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '67a066880000448ec129',
+        documentId: documentId,
+        data: {'Status': 'Confirmed'},
+      );
+      fetchAllBookings();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking Confirmed Successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating booking: $e')),
+      );
     }
   }
 
@@ -98,6 +118,8 @@ class _UserBookingListState extends State<UserBookingList> {
                         itemCount: bookingList.length,
                         itemBuilder: (context, index) {
                           final item = bookingList[index];
+                          bool isConfirmed = item['Status'] == 'Confirmed';
+
                           return Card(
                             margin: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 20),
@@ -105,32 +127,84 @@ class _UserBookingListState extends State<UserBookingList> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             elevation: 4,
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Name: ${item['Name']}',
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                            child: Stack(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Name: ${item['Name']}',
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text('Phone: ${item['Phone']}'),
+                                      Text(
+                                          'Check-in: ${item['Check_in_Date']}'),
+                                      Text(
+                                          'Check-out: ${item['Check_out_date']}'),
+                                      Text('Room No: ${item['RoomNumber']}'),
+                                      Text(
+                                          'Payment: ${item['PaymentMethod']} (${item['TransactionID']})'),
+                                      Text(
+                                        'Total Price: ৳${item['TotalPrice'].toString()}',
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 15),
+                                      ElevatedButton(
+                                        onPressed: isConfirmed
+                                            ? null
+                                            : () => confirmBooking(
+                                                item['documentId']),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isConfirmed
+                                              ? Colors.grey
+                                              : Colors.blue,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 8),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Confirm Booking',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Text('Phone: ${item['Phone']}'),
-                                  Text('Check-in: ${item['Check_in_Date']}'),
-                                  Text('Check-out: ${item['Check_out_date']}'),
-                                  Text('Room No: ${item['RoomNumber']}'),
-                                  Text(
-                                      'Payment: ${item['PaymentMethod']} (${item['TransactionID']})'),
-                                  Text(
-                                    'Total Price: ৳${item['TotalPrice'].toString()}',
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold),
+                                ),
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: isConfirmed
+                                          ? Colors.green
+                                          : Colors.brown,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      item['Status'],
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           );
                         },
