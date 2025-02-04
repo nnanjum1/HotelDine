@@ -98,6 +98,7 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Edit Item'),
         backgroundColor: Colors.white,
@@ -196,9 +197,9 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
                       child: ElevatedButton(
                         onPressed: updateItemDetails,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
+                          backgroundColor: Colors.green,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 12),
+                              horizontal: 40, vertical: 10),
                         ),
                         child: const Text('Save Changes',
                             style: TextStyle(color: Colors.white)),

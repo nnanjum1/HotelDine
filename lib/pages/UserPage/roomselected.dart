@@ -2,10 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/models.dart' as appwrite_models;
+import 'package:hoteldineflutter/pages/UserPage/chooseroom.dart';
 import 'package:intl/intl.dart';
-
-import 'hotelpayment.dart';
 
 class RoomSelected extends StatefulWidget {
   final Map<String, dynamic> room;
@@ -33,6 +31,11 @@ class _RoomSelectedState extends State<RoomSelected> {
   bool isLoading = true;
   int totalNights = 0;
   double totalPrice = 0.0;
+
+  // Payment-related variables
+  String? _selectedPaymentMethod;
+  final TextEditingController _transactionIdController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -91,6 +94,51 @@ class _RoomSelectedState extends State<RoomSelected> {
     }
   }
 
+  Future<void> requestToBook(String? email) async {
+    if (email == null) return;
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      await database.createDocument(
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '67a066880000448ec129',
+        documentId: 'unique()',
+        data: {
+          'Name': userData?['fullName'] ?? '',
+          'Phone': userData?['phone'] ?? '',
+          'DateOfBirth': userData?['dob'] ?? '',
+          'Check_in_Date': widget.checkInDate,
+          'Check_out_date': widget.checkOutDate,
+          'TotalPrice': totalPrice,
+          'RoomNumber': widget.room?['roomNumber'] ?? 'N/A',
+          'Email': email,
+          'PaymentMethod': _selectedPaymentMethod ?? '',
+          'TransactionID': _transactionIdController.text,
+          'Status': 'Pending',
+        },
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => ChooseRoom()));
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed to store: $e')));
+
+      print("Error requesting to book: $e");
+    }
+  }
+
   void calculateTotalPrice() {
     try {
       DateTime checkIn = DateFormat('yyyy-MM-dd').parse(widget.checkInDate);
@@ -109,110 +157,178 @@ class _RoomSelectedState extends State<RoomSelected> {
     }
   }
 
+  // Function to reload the page
+  void reloadPage() {
+    setState(() {
+      isLoading = true;
+    });
+    initializeAppwrite();
+    getCurrentUser();
+    calculateTotalPrice();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Choose Room'),
-        backgroundColor: Colors.white,
         actions: [
+          // Reload button in the top right corner
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.black),
-            onPressed: () {
-              getCurrentUser();
-              calculateTotalPrice();
-            },
+            icon: Icon(Icons.refresh),
+            onPressed: reloadPage,
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (isLoading) ...[
-              Center(child: CircularProgressIndicator()),
-            ] else if (userData != null) ...[
-              Text(
-                'Selected Room: ${widget.room['roomNumber'] ?? 'N/A'}',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 8),
+            if (isLoading) Center(child: CircularProgressIndicator()),
+
+            // **User Details Card**
+            if (userData != null) ...[
               Card(
                 elevation: 10,
-                shadowColor: Colors.grey,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text('User Details',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
+                      Divider(),
                       Text('Name: ${userData!['fullName'] ?? 'N/A'}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
+                          style: TextStyle(fontSize: 16)),
                       Text('Phone: ${userData!['phone'] ?? 'N/A'}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Text('Date of birth: ${userData!['dob'] ?? 'N/A'}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Text('Check-in Date: ${widget.checkInDate}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Text('Check-out Date: ${widget.checkOutDate}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Text('Total Nights: $totalNights',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Text('Price per Night: ${widget.room['price'] ?? 'N/A'}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Text('Total Price: $totalPrice',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red)),
-                      SizedBox(height: 8),
-                      Text('Total Guests: ${widget.totalGuests}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
+                          style: TextStyle(fontSize: 16)),
+                      Text('Date of Birth: ${userData!['dob'] ?? 'N/A'}',
+                          style: TextStyle(fontSize: 16)),
                     ],
                   ),
                 ),
               ),
             ],
-            Container(
-              margin: const EdgeInsets.only(top: 16),
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HotelPaynow()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  backgroundColor: Colors.blueAccent,
-                ),
-                child: const Text(
-                  'Request to book',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+            SizedBox(height: 20),
+
+            // **Room Details**
+            Card(
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Room Details',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    Divider(),
+                    Text('Room: ${widget.room['roomNumber'] ?? 'N/A'}',
+                        style: TextStyle(fontSize: 16)),
+                    Text('Check-in: ${widget.checkInDate}',
+                        style: TextStyle(fontSize: 16)),
+                    Text('Check-out: ${widget.checkOutDate}',
+                        style: TextStyle(fontSize: 16)),
+                    Text('Total Nights: $totalNights',
+                        style: TextStyle(fontSize: 16)),
+                    Text('Total Price: $totalPrice',
+                        style: TextStyle(fontSize: 16, color: Colors.red)),
+                  ],
                 ),
               ),
+            ),
+            SizedBox(height: 20),
+
+            // **Payment Methods**
+            // Payment Methods Section with Logos
+            Text('Payment Methods',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+
+            Row(
+              children: [
+                Radio<String>(
+                  value: 'Bkash',
+                  groupValue: _selectedPaymentMethod,
+                  onChanged: (value) =>
+                      setState(() => _selectedPaymentMethod = value),
+                ),
+                Image.asset('assets/images/bkash_logo.png',
+                    width: 30, height: 30),
+                SizedBox(width: 10),
+              ],
+            ),
+            Row(
+              children: [
+                Radio<String>(
+                  value: 'Nagad',
+                  groupValue: _selectedPaymentMethod,
+                  onChanged: (value) =>
+                      setState(() => _selectedPaymentMethod = value),
+                ),
+                Image.asset('assets/images/nagad_logo.png',
+                    width: 30, height: 30),
+                SizedBox(width: 10),
+              ],
+            ),
+            Row(
+              children: [
+                Radio<String>(
+                  value: 'Rocket',
+                  groupValue: _selectedPaymentMethod,
+                  onChanged: (value) =>
+                      setState(() => _selectedPaymentMethod = value),
+                ),
+                Image.asset('assets/images/rocket_logo.png',
+                    width: 30, height: 30),
+                SizedBox(width: 10),
+              ],
+            ),
+
+            TextField(
+              controller: _transactionIdController,
+              decoration: InputDecoration(
+                  labelText: 'Transaction ID', border: OutlineInputBorder()),
+            ),
+            SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      // Check if payment method is selected
+                      if (_selectedPaymentMethod == null ||
+                          _selectedPaymentMethod!.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Please select a payment method.')),
+                        );
+                        return; // Prevent further execution if payment method is not selected
+                      }
+
+                      // Check if transaction ID is entered
+                      if (_transactionIdController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Please enter a transaction ID.')),
+                        );
+                        return; // Prevent further execution if transaction ID is empty
+                      }
+
+                      // Proceed with booking request if validation is successful
+                      await requestToBook(currentUser?.email);
+                    },
+              child: isLoading
+                  ? CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFF35AF14)))
+                  : Text('Confirm Booking'),
             ),
           ],
         ),

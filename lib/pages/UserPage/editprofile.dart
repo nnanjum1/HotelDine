@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:appwrite/appwrite.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:appwrite/models.dart' as appwrite_models;
 
+import 'changepassword.dart';
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
 
@@ -14,6 +19,160 @@ class _EditProfileState extends State<EditProfile> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false;
+
+
+  bool isLoading = true;
+  late Client client;
+  late Databases database;
+  Map<String, String> user = {};
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize Appwrite client
+    client = Client()
+      ..setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
+      ..setProject('676506150033480a87c5'); // Replace with your project ID
+
+    database = Databases(client);
+
+    fetchUserData();
+  }
+  Future<void> fetchUserData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Get the current user from Firebase
+      firebase_auth.User? firebaseUser =
+          firebase_auth.FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser == null) {
+        Fluttertoast.showToast(msg: 'Please log in to view and edit profile');
+        setState(() => isLoading = false);
+        return;
+      }
+
+      // Fetch all documents from Appwrite
+      final response = await database.listDocuments(
+        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+        collectionId: '67650e290037f19f628f', // Replace with your collection ID
+      );
+
+      // Find the document matching the user's email
+      appwrite_models.Document? userDoc;
+      try {
+        userDoc = response.documents.firstWhere(
+              (doc) => doc.data['email'] == firebaseUser.email,
+        );
+      } catch (e) {
+        userDoc = null; // No document found
+      }
+
+      if (userDoc == null) {
+        setState(() {
+          isLoading = false;
+          user = {
+            'name': 'Name not available',
+            'email': 'Email not available',
+            'phone': 'Phone number not available',
+          };
+        });
+      } else {
+        setState(() {
+          user = {
+            'name': userDoc?.data["fullName"] ?? 'Name not available',
+            'email': userDoc?.data['email'] ?? 'Email not available',
+            'phone': userDoc?.data['phone'] ?? 'Phone number not available',
+          };
+          nameController.text = user['name']!;
+          emailAddressController.text = user['email']!;
+          phoneController.text = user['phone']!;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching data: $e')),
+      );
+    }
+  }
+
+  // Update profile data in Appwrite
+  Future<void> updateProfileData() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = true;
+      });
+
+      try {
+        firebase_auth.User? firebaseUser =
+            firebase_auth.FirebaseAuth.instance.currentUser;
+
+        if (firebaseUser == null) {
+          Fluttertoast.showToast(msg: 'Please log in to update your profile');
+          setState(() {
+            isLoading = false;
+          });
+          return;
+        }
+
+        // Fetch the latest user document
+        final response = await database.listDocuments(
+          databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+          collectionId: '67650e290037f19f628f', // Replace with your collection ID
+        );
+
+        appwrite_models.Document? userDoc;
+        try {
+          userDoc = response.documents.firstWhere(
+                (doc) => doc.data['email'] == firebaseUser.email,
+          );
+        } catch (e) {
+          userDoc = null;
+        }
+
+        // Ensure userDoc is not null
+        if (userDoc == null) {
+          Fluttertoast.showToast(msg: 'User document not found!');
+          setState(() {
+            isLoading = false;
+          });
+          return;
+        }
+
+        String documentId = userDoc.$id; // Now safe to access
+
+        final updateResponse = await database.updateDocument(
+          databaseId: '67650e170015d7a01bc8',
+          collectionId: '67650e290037f19f628f',
+          documentId: documentId,
+          data: {
+            'fullName': nameController.text,
+           'email': emailAddressController.text,
+          'phone': phoneController.text,
+          },
+        );
+        print("Update Response: ${updateResponse.data}");
+
+
+        Fluttertoast.showToast(msg: 'Profile updated successfully');
+        setState(() {
+          isLoading = false;
+        });
+
+        Navigator.pop(context);
+      } catch (e) {
+        setState(() => isLoading = false);
+        Fluttertoast.showToast(msg: 'Error updating profile: $e');
+      }
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +204,30 @@ class _EditProfileState extends State<EditProfile> {
 
                 const SizedBox(height: 20),
 
+                // Email Field
+                TextFormField(
+                  controller: emailAddressController,
+                  keyboardType: TextInputType.emailAddress,
+                  readOnly: true,
+                  style: const TextStyle(color:Color(0xFF808080)),
+                  decoration: InputDecoration(
+                    hintText: 'Email address',
+                    filled: true,
+                    fillColor: const Color(0xFFF5F5F5),
+
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email address';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
 
                 TextFormField(
                   controller: nameController,
@@ -61,28 +244,6 @@ class _EditProfileState extends State<EditProfile> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your full name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-
-                // Email Field
-                TextFormField(
-                  controller: emailAddressController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    hintText: 'Email address',
-                    filled: true,
-                    fillColor: const Color(0xFFDCDCDC),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email address';
                     }
                     return null;
                   },
@@ -139,9 +300,9 @@ class _EditProfileState extends State<EditProfile> {
 
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-
+                        await updateProfileData();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Profile updated successfully!')),
                         );
@@ -170,166 +331,3 @@ class _EditProfileState extends State<EditProfile> {
 
 
 
-class ChangePasswordPage extends StatefulWidget {
-  const ChangePasswordPage({super.key});
-
-  @override
-  State<ChangePasswordPage> createState() => _ChangePasswordPageState();
-}
-
-class _ChangePasswordPageState extends State<ChangePasswordPage> {
-  final TextEditingController currentPasswordController = TextEditingController();
-  final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmNewPasswordController = TextEditingController();
-
-  bool isCurrentPasswordVisible = false;
-  bool isNewPasswordVisible = false;
-  bool isConfirmPasswordVisible = false;
-
-  String? errorMessage;
-
-  void updatePassword() {
-    String currentPassword = currentPasswordController.text.trim();
-    String newPassword = newPasswordController.text.trim();
-    String confirmNewPassword = confirmNewPasswordController.text.trim();
-
-    setState(() {
-      if (currentPassword.isEmpty || newPassword.isEmpty || confirmNewPassword.isEmpty) {
-        errorMessage = 'All fields are required!';
-      } else if (newPassword != confirmNewPassword) {
-        errorMessage = 'New password and confirm password do not match!';
-      } else {
-        errorMessage = null;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password updated successfully!')),
-        );
-
-        currentPasswordController.clear();
-        newPasswordController.clear();
-        confirmNewPasswordController.clear();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Password'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Current Password Field
-            TextField(
-              controller: currentPasswordController,
-              obscureText: !isCurrentPasswordVisible,
-              decoration: InputDecoration(
-                hintText: 'Current Password',
-                filled: true,
-                fillColor: const Color(0xFFDCDCDC),
-                border:OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    isCurrentPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isCurrentPasswordVisible = !isCurrentPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-
-            TextField(
-              controller: newPasswordController,
-              obscureText: !isNewPasswordVisible,
-              decoration: InputDecoration(
-                hintText: 'New Password',
-                filled: true,
-                fillColor: const Color(0xFFDCDCDC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    isNewPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isNewPasswordVisible = !isNewPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-
-            TextField(
-              controller: confirmNewPasswordController,
-              obscureText: !isConfirmPasswordVisible,
-              decoration: InputDecoration(
-                hintText: 'Confirm New Password',
-                filled: true,
-                fillColor: const Color(0xFFDCDCDC),
-                border:  OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isConfirmPasswordVisible = !isConfirmPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-
-            if (errorMessage != null)
-              Text(
-                errorMessage!,
-                style: const TextStyle(color: Colors.red),
-              ),
-            const SizedBox(height: 20),
-
-
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(26),
-                ),
-              ),
-              onPressed: () {
-                updatePassword();
-              },
-              child: const Text(
-                'Update Password',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-
-
-          ],
-        ),
-      ),
-    );
-  }
-}

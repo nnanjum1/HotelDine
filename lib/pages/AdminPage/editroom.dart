@@ -87,14 +87,15 @@ class _EditRoomState extends State<EditRoom> {
       ),
       body: isLoading
           ? Center(
-
           child:
           CircularProgressIndicator()) // Show progress bar while loading
           : roomData == null
           ? Center(
           child:
-          Text('Room not found')) // Show message if room not found
-          : Padding(
+          Text('Room not found')
+      ) // Show message if room not found
+          : SingleChildScrollView(
+          child : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -179,7 +180,7 @@ class _EditRoomState extends State<EditRoom> {
           ],
         ),
       ),
-
+    ),
     );
   }
 

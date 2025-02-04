@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
+import 'package:hoteldineflutter/pages/UserPage/mybooking.dart';
 import 'dart:typed_data';
-import 'package:hoteldineflutter/pages/UserPage/detailsofroom.dart';
 import 'package:hoteldineflutter/pages/UserPage/myprofile.dart';
 import 'package:hoteldineflutter/pages/UserPage/roomselected.dart';
 
@@ -21,19 +21,21 @@ class ChooseRoomState extends State<ChooseRoom> {
   int get totalGuest => _adults + _children;
 
   final List<Map<String, dynamic>> rooms = [];
+  final List<Map<String, dynamic>> bookedRooms = [];
   List<Map<String, dynamic>> filteredRooms = [];
   late Databases databases;
   late Storage storage;
-  bool isLoading = true; // Add this flag to track the loading state
-  final String databaseId =
-      '67650e170015d7a01bc8'; // Replace with your database ID
+  bool isLoading = true;
+  final String databaseId = '67650e170015d7a01bc8';
   final String collectionId = '6784c4dd00332fc62aeb';
+  final String BookingCollection = '67a066880000448ec129';
 
   @override
   void initState() {
     super.initState();
     initializeAppwrite();
     fetchRooms();
+    fetchDates();
   }
 
   void initializeAppwrite() {
@@ -50,7 +52,6 @@ class ChooseRoomState extends State<ChooseRoom> {
         databaseId: databaseId,
         collectionId: collectionId,
       );
-
       setState(() {
         rooms.clear();
         for (var doc in documentList.documents) {
@@ -60,41 +61,85 @@ class ChooseRoomState extends State<ChooseRoom> {
             'description': doc.data['RoomDescription'],
             'category': doc.data['RoomCategory'],
             'price': doc.data['price'],
-            'image': doc.data['ImageUrl'], // Ensure the URL is valid
-            'documentId': doc.$id, // Store document ID for deletion
+            'image': doc.data['ImageUrl'],
+            'documentId': doc.$id,
           });
         }
-        filteredRooms = rooms; // Initialize filtered rooms
-        isLoading = false; // Set isLoading to false after data is fetched
+        filteredRooms = rooms;
+        isLoading = false;
       });
     } catch (e) {
       print('Error fetching rooms: $e');
       setState(() {
-        isLoading = false; // Set isLoading to false in case of an error
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> fetchDates() async {
+    try {
+      DocumentList documentList = await databases.listDocuments(
+        databaseId: databaseId,
+        collectionId: BookingCollection,
+      );
+      setState(() {
+        bookedRooms.clear();
+        for (var doc in documentList.documents) {
+          bookedRooms.add({
+            'roomNumber': doc.data['RoomNumber'],
+            'Check_in_Date': doc.data['Check_in_Date'],
+            'Check_out_Date': doc.data['Check_out_date'],
+          });
+        }
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching booked rooms: $e');
+      setState(() {
+        isLoading = false;
       });
     }
   }
 
   Future<void> _reloadRooms() async {
     setState(() {
-      isLoading = true; // Set loading state to true
+      isLoading = true;
     });
-    await fetchRooms(); // Reload data
+    await fetchRooms();
+    await fetchDates();
+  }
+
+  bool isRoomBookedBetweenDates(
+      Map<String, dynamic> room, String checkInDate, String checkOutDate) {
+    for (var bookedRoom in bookedRooms) {
+      if (bookedRoom['roomNumber'] == room['roomNumber']) {
+        DateTime bookedCheckIn = DateTime.parse(bookedRoom['Check_in_Date']);
+        DateTime bookedCheckOut = DateTime.parse(bookedRoom['Check_out_Date']);
+        DateTime selectedCheckIn = DateTime.parse(checkInDate);
+        DateTime selectedCheckOut = DateTime.parse(checkOutDate);
+
+        if ((selectedCheckIn.isBefore(bookedCheckOut) ||
+                selectedCheckIn.isAtSameMomentAs(bookedCheckOut)) &&
+            (selectedCheckOut.isAfter(bookedCheckIn) ||
+                selectedCheckOut.isAtSameMomentAs(bookedCheckIn))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> body = [
       _homePage(),
-      Center(child: Text('Booked Page')),
-      Center(child: Text('Saved Page')),
+      MyBooking(),
       myprofile(),
     ];
 
     final List<String> appBarTitles = [
       'Choose Room',
       'Booked Rooms',
-      'Saved',
       'Profile',
     ];
 
@@ -116,16 +161,13 @@ class ChooseRoomState extends State<ChooseRoom> {
         ],
       ),
       body: isLoading
-          ? Center(
-              child:
-                  CircularProgressIndicator()) // Show loader while fetching data
-          : body[currentIndex], // Show page content once data is loaded
+          ? Center(child: CircularProgressIndicator())
+          : body[currentIndex],
       bottomNavigationBar: NavigationBar(
         backgroundColor: Colors.white,
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.book), label: 'Booked'),
-          NavigationDestination(icon: Icon(Icons.save), label: 'Saved'),
+          NavigationDestination(icon: Icon(Icons.book), label: 'My Booking'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
         ],
         selectedIndex: currentIndex,
@@ -144,7 +186,6 @@ class ChooseRoomState extends State<ChooseRoom> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Check-in and Check-out
           TextField(
             controller: _dateRangeController,
             decoration: InputDecoration(
@@ -162,7 +203,6 @@ class ChooseRoomState extends State<ChooseRoom> {
             onTap: _selectDateRange,
           ),
           SizedBox(height: 20),
-          // Guests Section
           GestureDetector(
             onTap: () {
               setState(() {
@@ -267,13 +307,14 @@ class ChooseRoomState extends State<ChooseRoom> {
               ),
               onPressed: _isSearchButtonEnabled
                   ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const detailsofroom()),
-                      );
+                      setState(() {
+                        filteredRooms = rooms.where((room) {
+                          return !bookedRooms.any((bookedRoom) =>
+                              bookedRoom['roomNumber'] == room['roomNumber']);
+                        }).toList();
+                      });
                     }
-                  : null, // Disable button if not enabled
+                  : null,
               child: Text(
                 'Search',
                 style: TextStyle(fontSize: 16, color: Colors.white),
@@ -286,6 +327,19 @@ class ChooseRoomState extends State<ChooseRoom> {
               itemCount: filteredRooms.length,
               itemBuilder: (context, index) {
                 final room = filteredRooms[index];
+                final bookedRoom = bookedRooms.firstWhere(
+                  (bookedRoom) =>
+                      bookedRoom['roomNumber'] == room['roomNumber'],
+                  orElse: () => {},
+                );
+
+                bool isBooked = _dateRangeController.text.contains(" - ")
+                    ? isRoomBookedBetweenDates(
+                        room,
+                        _dateRangeController.text.split(" - ")[0],
+                        _dateRangeController.text.split(" - ")[1])
+                    : false;
+
                 return Card(
                   color: Color(0xFFE9FBFF),
                   margin: const EdgeInsets.symmetric(
@@ -342,10 +396,8 @@ class ChooseRoomState extends State<ChooseRoom> {
                                         Icons.free_breakfast,
                                         color: Colors.green,
                                         size: 16,
-                                      ), // Breakfast icon
-                                      SizedBox(
-                                          width:
-                                              8), // Space between icon and text
+                                      ),
+                                      SizedBox(width: 8),
                                       Text(
                                         'Breakfast included',
                                         style: TextStyle(
@@ -361,10 +413,8 @@ class ChooseRoomState extends State<ChooseRoom> {
                                         Icons.bathtub,
                                         color: Colors.green,
                                         size: 16,
-                                      ), // Bathroom icon
-                                      SizedBox(
-                                          width:
-                                              8), // Space between icon and text
+                                      ),
+                                      SizedBox(width: 8),
                                       Text(
                                         'Private Bathroom',
                                         style: TextStyle(
@@ -415,11 +465,26 @@ class ChooseRoomState extends State<ChooseRoom> {
                                       fontSize: 10,
                                       color: Colors.grey[600],
                                     ),
-                                  )
+                                  ),
+                                  if (bookedRoom.isNotEmpty) ...[
+                                    Text(
+                                      'Check-in Date: ${bookedRoom['Check_in_Date']}',
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      'Check-out Date: ${bookedRoom['Check_out_Date']}',
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
-                            // Second Column: Edit and Delete buttons
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
@@ -459,38 +524,39 @@ class ChooseRoomState extends State<ChooseRoom> {
                             )
                           ],
                         ),
-                        // Image below the row
                         SizedBox(height: 8),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {
-                              // Pass the room details to the RoomSeleted screen
-                              if (_dateRangeController.text.contains(" - ")) {
-                                List<String> dates =
-                                    _dateRangeController.text.split(" - ");
-                                String checkInDate =
-                                    dates.isNotEmpty ? dates[0] : "";
-                                String checkOutDate =
-                                    dates.length > 1 ? dates[1] : "";
+                            onPressed: isBooked
+                                ? null
+                                : () {
+                                    if (_dateRangeController.text
+                                        .contains(" - ")) {
+                                      List<String> dates = _dateRangeController
+                                          .text
+                                          .split(" - ");
+                                      String checkInDate =
+                                          dates.isNotEmpty ? dates[0] : "";
+                                      String checkOutDate =
+                                          dates.length > 1 ? dates[1] : "";
 
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => RoomSelected(
-                                      room: room,
-                                      checkInDate: checkInDate,
-                                      checkOutDate: checkOutDate,
-                                      totalGuests: totalGuest,
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                // Show an error or handle the case where no date is selected
-                                print(
-                                    "Error: Check-in and Check-out dates are not selected.");
-                              }
-                            },
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => RoomSelected(
+                                            room: room,
+                                            checkInDate: checkInDate,
+                                            checkOutDate: checkOutDate,
+                                            totalGuests: totalGuest,
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      print(
+                                          "Error: Check-in and Check-out dates are not selected.");
+                                    }
+                                  },
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
                                 color: Colors.blueAccent,
@@ -499,11 +565,15 @@ class ChooseRoomState extends State<ChooseRoom> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
-                              backgroundColor: Color(0xFFE9FBFF),
+                              backgroundColor:
+                                  isBooked ? Colors.grey : Color(0xFFE9FBFF),
                             ),
-                            child: const Text(
-                              'Select',
-                              style: TextStyle(color: Colors.blueAccent),
+                            child: Text(
+                              isBooked ? 'Booked' : 'Select',
+                              style: TextStyle(
+                                color:
+                                    isBooked ? Colors.white : Colors.blueAccent,
+                              ),
                             ),
                           ),
                         )
@@ -521,7 +591,6 @@ class ChooseRoomState extends State<ChooseRoom> {
 
   bool _isSearchButtonEnabled = false;
 
-  // Date Range Picker
   Future<void> _selectDateRange() async {
     DateTime today = DateTime.now();
     DateTime firstSelectableDate = DateTime(today.year, today.month, today.day);
@@ -529,7 +598,7 @@ class ChooseRoomState extends State<ChooseRoom> {
     DateTime? checkInDate = await showDatePicker(
       context: context,
       initialDate: firstSelectableDate,
-      firstDate: firstSelectableDate, // Restrict past dates
+      firstDate: firstSelectableDate,
       lastDate: DateTime(2100),
     );
 
@@ -537,8 +606,7 @@ class ChooseRoomState extends State<ChooseRoom> {
       DateTime? checkOutDate = await showDatePicker(
         context: context,
         initialDate: checkInDate.add(Duration(days: 1)),
-        firstDate: checkInDate
-            .add(Duration(days: 1)), // Checkout must be after check-in
+        firstDate: checkInDate.add(Duration(days: 1)),
         lastDate: DateTime(2100),
       );
 
@@ -553,7 +621,6 @@ class ChooseRoomState extends State<ChooseRoom> {
   }
 
   void _updateSearchButtonState() {
-    // Enable button only if both date range and guest numbers are valid
     setState(() {
       _isSearchButtonEnabled =
           _dateRangeController.text.isNotEmpty && _adults > 0 && _children >= 0;

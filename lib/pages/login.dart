@@ -5,6 +5,8 @@ import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart';
 import 'package:hoteldineflutter/pages/UserPage/home.dart';
 import 'package:hoteldineflutter/pages/signup.dart';
 
+import 'forgotpasswordpage.dart';
+
 class login extends StatefulWidget {
   const login({super.key});
 
@@ -125,10 +127,11 @@ class _LoginState extends State<login> {
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             hintText: 'Email address',
+                            hintStyle: const TextStyle(color: Colors.grey),
                             filled: true,
-                            fillColor: const Color(0xFFDCDCDC),
+                            fillColor: Colors.grey[200],
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
+                              borderRadius: BorderRadius.circular(10.0),
                               borderSide: BorderSide.none,
                             ),
                           ),
@@ -146,17 +149,20 @@ class _LoginState extends State<login> {
                           controller: password,
                           obscureText: !isPasswordVisible,
                           decoration: InputDecoration(
-                            hintText: 'password',
+                            hintText: 'Password',
+                            hintStyle: const TextStyle(color: Colors.grey),
                             filled: true,
-                            fillColor: const Color(0xFFDCDCDC),
+                            fillColor: Colors.grey[200],
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
+                              borderRadius: BorderRadius.circular(10.0),
                               borderSide: BorderSide.none,
                             ),
+
                             suffixIcon: IconButton(
                               icon: Icon(isPasswordVisible
                                   ? Icons.visibility_off
                                   : Icons.visibility),
+                              color: Colors.grey,
                               onPressed: () {
                                 setState(() {
                                   isPasswordVisible = !isPasswordVisible;
@@ -189,25 +195,12 @@ class _LoginState extends State<login> {
 
                         // Remember Me and Forgot Password
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: isRememberMeChecked,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      isRememberMeChecked = value!;
-                                    });
-                                  },
-                                ),
-                                const Text('Remember Me'),
-                              ],
-                            ),
                             TextButton(
                               onPressed: () {
-                                // Handle Forgot Password
-                              },
+                                Navigator.push(context, MaterialPageRoute(builder: (context)=> ForgotPasswordPage()),)  ;
+                                    },
                               child: const Text(
                                 'Forgot Password?',
                                 style: TextStyle(color: Colors.blue),
@@ -227,6 +220,7 @@ class _LoginState extends State<login> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(26),
                             ),
+                            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
                           ),
                           child: const Text(
                             'Login',
