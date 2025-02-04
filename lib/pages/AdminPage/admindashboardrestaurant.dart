@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hoteldineflutter/pages/AdminPage/resadditem.dart';
 import 'package:hoteldineflutter/pages/AdminPage/resviewitem.dart';
-import 'package:hoteldineflutter/pages/AdminPage/hotelbutton.dart';
+import 'package:hoteldineflutter/pages/AdminPage/admindashboardhotel.dart';
 import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart';
 
 import 'manageorder.dart';
