@@ -4,6 +4,7 @@ import 'package:appwrite/models.dart';
 import 'dart:typed_data';
 import 'package:hoteldineflutter/pages/UserPage/detailsofroom.dart';
 import 'package:hoteldineflutter/pages/UserPage/myprofile.dart';
+import 'package:hoteldineflutter/pages/UserPage/roomselected.dart';
 
 class ChooseRoom extends StatefulWidget {
   @override
@@ -16,6 +17,8 @@ class ChooseRoomState extends State<ChooseRoom> {
   bool _isGuestSectionExpanded = false;
   int _adults = 1;
   int _children = 0;
+
+  int get totalGuest => _adults + _children;
 
   final List<Map<String, dynamic>> rooms = [];
   List<Map<String, dynamic>> filteredRooms = [];
@@ -81,7 +84,6 @@ class ChooseRoomState extends State<ChooseRoom> {
 
   @override
   Widget build(BuildContext context) {
-    // Pages for navigation
     final List<Widget> body = [
       _homePage(),
       Center(child: Text('Booked Page')),
@@ -96,8 +98,6 @@ class ChooseRoomState extends State<ChooseRoom> {
       'Profile',
     ];
 
-
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -106,18 +106,20 @@ class ChooseRoomState extends State<ChooseRoom> {
           appBarTitles[currentIndex],
           style: TextStyle(color: Colors.black),
         ),
-
         elevation: 1.0,
         iconTheme: IconThemeData(color: Colors.black),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh), // Reload icon
-            onPressed: _reloadRooms, // Call reload function
+            icon: Icon(Icons.refresh),
+            onPressed: _reloadRooms,
           ),
         ],
-
       ),
-      body: body[currentIndex],
+      body: isLoading
+          ? Center(
+              child:
+                  CircularProgressIndicator()) // Show loader while fetching data
+          : body[currentIndex], // Show page content once data is loaded
       bottomNavigationBar: NavigationBar(
         backgroundColor: Colors.white,
         destinations: const [
@@ -135,8 +137,6 @@ class ChooseRoomState extends State<ChooseRoom> {
       ),
     );
   }
-
-
 
   Widget _homePage() {
     return Padding(
@@ -204,11 +204,11 @@ class ChooseRoomState extends State<ChooseRoom> {
                     IconButton(
                       onPressed: _adults > 1
                           ? () {
-                        setState(() {
-                          _adults--;
-                          _updateSearchButtonState();
-                        });
-                      }
+                              setState(() {
+                                _adults--;
+                                _updateSearchButtonState();
+                              });
+                            }
                           : null,
                       icon: Icon(Icons.remove),
                     ),
@@ -236,10 +236,10 @@ class ChooseRoomState extends State<ChooseRoom> {
                     IconButton(
                       onPressed: _children > 0
                           ? () {
-                        setState(() {
-                          _children--;
-                        });
-                      }
+                              setState(() {
+                                _children--;
+                              });
+                            }
                           : null,
                       icon: Icon(Icons.remove),
                     ),
@@ -267,12 +267,13 @@ class ChooseRoomState extends State<ChooseRoom> {
               ),
               onPressed: _isSearchButtonEnabled
                   ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const detailsofroom()),
-                );
-              }
-                  : null,  // Disable button if not enabled
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const detailsofroom()),
+                      );
+                    }
+                  : null, // Disable button if not enabled
               child: Text(
                 'Search',
                 style: TextStyle(fontSize: 16, color: Colors.white),
@@ -301,7 +302,6 @@ class ChooseRoomState extends State<ChooseRoom> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // First Column: Room details
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,7 +345,7 @@ class ChooseRoomState extends State<ChooseRoom> {
                                       ), // Breakfast icon
                                       SizedBox(
                                           width:
-                                          8), // Space between icon and text
+                                              8), // Space between icon and text
                                       Text(
                                         'Breakfast included',
                                         style: TextStyle(
@@ -364,7 +364,7 @@ class ChooseRoomState extends State<ChooseRoom> {
                                       ), // Bathroom icon
                                       SizedBox(
                                           width:
-                                          8), // Space between icon and text
+                                              8), // Space between icon and text
                                       Text(
                                         'Private Bathroom',
                                         style: TextStyle(
@@ -380,10 +380,8 @@ class ChooseRoomState extends State<ChooseRoom> {
                                         Icons.wifi,
                                         color: Colors.green,
                                         size: 16,
-                                      ), // WiFi icon
-                                      SizedBox(
-                                          width:
-                                          8), // Space between icon and text
+                                      ),
+                                      SizedBox(width: 8),
                                       Text(
                                         'Free WiFi',
                                         style: TextStyle(
@@ -425,17 +423,10 @@ class ChooseRoomState extends State<ChooseRoom> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-
-
-                                 IconButton(
-                                  onPressed: () {
-                                  },
+                                IconButton(
+                                  onPressed: () {},
                                   icon: Icon(Icons.favorite_border_outlined),
-
                                 ),
-
-
-
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(10.0),
                                   child: FutureBuilder<Uint8List>(
@@ -470,19 +461,52 @@ class ChooseRoomState extends State<ChooseRoom> {
                         ),
                         // Image below the row
                         SizedBox(height: 8),
-                        SizedBox(width: double.infinity,child:  ElevatedButton(
-                          onPressed: () {
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Pass the room details to the RoomSeleted screen
+                              if (_dateRangeController.text.contains(" - ")) {
+                                List<String> dates =
+                                    _dateRangeController.text.split(" - ");
+                                String checkInDate =
+                                    dates.isNotEmpty ? dates[0] : "";
+                                String checkOutDate =
+                                    dates.length > 1 ? dates[1] : "";
 
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.blueAccent, width: 1.0), // Set outline color and width
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RoomSelected(
+                                      room: room,
+                                      checkInDate: checkInDate,
+                                      checkOutDate: checkOutDate,
+                                      totalGuests: totalGuest,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // Show an error or handle the case where no date is selected
+                                print(
+                                    "Error: Check-in and Check-out dates are not selected.");
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: Colors.blueAccent,
+                                width: 1.0,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              backgroundColor: Color(0xFFE9FBFF),
                             ),
-                            backgroundColor: Color(0xFFE9FBFF), // Button background color
+                            child: const Text(
+                              'Select',
+                              style: TextStyle(color: Colors.blueAccent),
+                            ),
                           ),
-                          child: const Text('Select',style: TextStyle(color: Colors.blueAccent),),
-                        ),)
+                        )
                       ],
                     ),
                   ),
@@ -490,9 +514,7 @@ class ChooseRoomState extends State<ChooseRoom> {
               },
             ),
           ),
-
         ],
-
       ),
     );
   }
@@ -515,24 +537,26 @@ class ChooseRoomState extends State<ChooseRoom> {
       DateTime? checkOutDate = await showDatePicker(
         context: context,
         initialDate: checkInDate.add(Duration(days: 1)),
-        firstDate: checkInDate.add(Duration(days: 1)), // Checkout must be after check-in
+        firstDate: checkInDate
+            .add(Duration(days: 1)), // Checkout must be after check-in
         lastDate: DateTime(2100),
       );
 
       if (checkOutDate != null) {
         setState(() {
           _dateRangeController.text =
-          "${checkInDate.toString().split(" ")[0]} - ${checkOutDate.toString().split(" ")[0]}";
+              "${checkInDate.toString().split(" ")[0]} - ${checkOutDate.toString().split(" ")[0]}";
           _updateSearchButtonState();
         });
       }
     }
   }
+
   void _updateSearchButtonState() {
     // Enable button only if both date range and guest numbers are valid
     setState(() {
-      _isSearchButtonEnabled = _dateRangeController.text.isNotEmpty && _adults > 0 && _children >= 0;
+      _isSearchButtonEnabled =
+          _dateRangeController.text.isNotEmpty && _adults > 0 && _children >= 0;
     });
   }
-
 }

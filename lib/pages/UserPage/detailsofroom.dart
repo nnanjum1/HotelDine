@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hoteldineflutter/pages/UserPage/hotelpayment.dart';
 
 class detailsofroom extends StatelessWidget {
   const detailsofroom({super.key});
@@ -26,10 +27,10 @@ class detailsofroom extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-
                     Text(
                       'Name:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -68,8 +69,9 @@ class detailsofroom extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Total Amount:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      'Total Amoun:',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -83,7 +85,10 @@ class detailsofroom extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HotelPaynow()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.all(16),
