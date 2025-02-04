@@ -58,8 +58,8 @@ class AvailablefoodsState extends State<Availablefoods> {
     });
     try {
       final result = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679914b6002ca53ab39b', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679914b6002ca53ab39b', //food container
       );
 
       setState(() {
@@ -91,30 +91,59 @@ class AvailablefoodsState extends State<Availablefoods> {
   void saveCartToDatabase(String itemName, String itemDescription, String price,
       String imageUrl) async {
     try {
-      // Get the current user from Firebase
       firebase_auth.User? user = FirebaseAuth.instance.currentUser;
 
-      // If the user is not logged in, show a toast message and return
       if (user == null) {
         Fluttertoast.showToast(msg: 'Please log in to add items to cart');
+        return;
+      }
+
+      // Check if the item already exists in the cart for this user
+      final result = await database.listDocuments(
+        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+        collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
+        queries: [
+          Query.equal('Email', user.email ?? ''),
+          Query.equal('cartItemName', itemName),
+        ],
+      );
+
+      if (result.documents.isNotEmpty) {
+        // Item is already in the cart
+        Fluttertoast.showToast(
+          msg: 'This item is already in your cart!',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.black,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
         return;
       }
 
       // Generate a unique ID for the cart item
       final String cartItemId = ID.unique();
 
-      // Insert into the database (this is where we save the cart item details)
       await database.createDocument(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
-        documentId: cartItemId, // Use the unique ID for the cart item
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679e8489002cd468bb6b',
+        documentId: cartItemId,
         data: {
           'cartItemName': itemName,
           'cartDescription': itemDescription,
           'Price': double.tryParse(price) ?? 0.0,
-          'ImageUrl': imageUrl, // Pass the image URL here
-          'Email': user.email ?? '', // Set the current user's email
+          'ImageUrl': imageUrl,
+          'Email': user.email ?? '',
         },
+      );
+
+      Fluttertoast.showToast(
+        msg: '$itemName added to cart!',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+        fontSize: 16.0,
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -139,11 +168,7 @@ class AvailablefoodsState extends State<Availablefoods> {
   Widget build(BuildContext context) {
     final List<Widget> body = [
       _homePage(),
-      Mycart(
-        itemName: '',
-        price: '0.0',
-        imageUrl: '',
-      ),
+      Mycart(),
       Myorder(),
       myprofile(),
     ];

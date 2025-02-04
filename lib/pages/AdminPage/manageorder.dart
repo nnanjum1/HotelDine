@@ -1,13 +1,12 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
-class UserorderList extends StatefulWidget {
+class UserOrderList extends StatefulWidget {
   @override
   MyorderState createState() => MyorderState();
 }
 
-class MyorderState extends State<UserorderList> {
+class MyorderState extends State<UserOrderList> {
   late Client client;
   late Databases database;
 
@@ -31,14 +30,13 @@ class MyorderState extends State<UserorderList> {
 
   Future<void> fetchCartData() async {
     setState(() {
-      isLoading = true; // Show the progress bar when data is being fetched
+      isLoading = true;
     });
 
     try {
-      // Fetch all documents from Appwrite
       final response = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679fb9fb0004c6321d63', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679fb9fb0004c6321d63',
       );
 
       setState(() {
@@ -46,31 +44,27 @@ class MyorderState extends State<UserorderList> {
           return {
             'documentId': doc.$id,
             'paymentMethod': doc.data['paymentMethod'],
-            'TotalAmount':
-                double.tryParse(doc.data['TotalAmount'].toString()) ??
-                    0.0, // Ensure it's a double
-            'name': doc.data['Name'] ?? 'No Name', // Add the 'Name' field here
+            'TotalAmount': doc.data['TotalAmount'],
+            'name': doc.data['Name'] ?? 'No Name',
             'TnxId': doc.data['TnxId'],
-            'Email': doc.data['Email'],
             'OrderItemsList': doc.data['OrderItemsList'] ?? [],
+            'RoomNumber': doc.data['RoomNumber'] ?? 'Given Nothing',
             'orderItemsQuantity': doc.data['orderItemsQuantity'] ?? [],
             'orderItemsPrices': doc.data['orderItemsPrices'] ?? [],
           };
         }).toList();
 
-        // Recalculate the total amount
         totalAmount = cartItems.fold(
-            0.0,
-            (sum, item) =>
-                sum +
-                (item['TotalAmount'] ?? 0.0)); // Use the 'TotalAmount' field
+          0.0,
+          (sum, item) => sum + (item['TotalAmount'] ?? 0.0),
+        );
       });
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error fetching cart: $e')));
     } finally {
       setState(() {
-        isLoading = false; // Hide the progress bar after the data is fetched
+        isLoading = false;
       });
     }
   }
@@ -81,89 +75,124 @@ class MyorderState extends State<UserorderList> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(
-          'My Orders',
-          style: TextStyle(color: Colors.black),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back),
         ),
+        title: Text('Order List'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: fetchCartData,
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            Expanded(
-              child: isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : cartItems.isEmpty
-                      ? Center(child: Text('No Orders Available'))
-                      : ListView.builder(
-                          itemCount: cartItems.length,
-                          itemBuilder: (context, index) {
-                            final order = cartItems[index];
-                            final List orderItems =
-                                order['OrderItemsList'] ?? [];
-                            final List orderItemsQuantity =
-                                order['orderItemsQuantity'] ?? [];
-                            final List orderItemsPrices =
-                                order['orderItemsPrices'] ?? [];
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      final order = cartItems[index];
+                      final List orderItems = order['OrderItemsList'] ?? [];
+                      final List orderItemsQuantity =
+                          order['orderItemsQuantity'] ?? [];
+                      final List orderItemsPrices =
+                          order['orderItemsPrices'] ?? [];
 
-                            double orderTotalCost = 0.0;
-                            for (int i = 0; i < orderItems.length; i++) {
-                              double itemPrice = double.tryParse(
-                                      orderItemsPrices[i].toString()) ??
-                                  0.0;
-                              int itemQuantity = orderItemsQuantity[i] ?? 0;
-                              double itemTotalPrice = itemPrice * itemQuantity;
-                              orderTotalCost += itemTotalPrice;
-                            }
+                      double orderTotalCost = orderItems.fold(0.0, (sum, item) {
+                        int itemIndex = orderItems.indexOf(item);
+                        double price = double.tryParse(
+                                orderItemsPrices[itemIndex].toString()) ??
+                            0.0;
+                        int quantity = int.tryParse(
+                                orderItemsQuantity[itemIndex].toString()) ??
+                            1;
+                        double itemTotalPrice = price * quantity;
+                        return sum + itemTotalPrice;
+                      });
 
-                            return Card(
-                              elevation: 5,
-                              margin: EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Transaction ID: ${order['TnxId']}',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                        'Payment Method: ${order['paymentMethod']}'),
-                                    SizedBox(height: 10),
-                                    Text('Customer Name: ${order['name']}'),
-                                    SizedBox(height: 10),
-                                    Divider(),
-                                    Text('',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    Divider(),
-                                    Text(
-                                      'Total Price: BDT ${order['TotalAmount'].toStringAsFixed(2)}', // Ensure TotalAmount is a double
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                      return Card(
+                        elevation: 5,
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Room: ${order['RoomNumber']}',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text('Order ID: ${order['documentId']}',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Payment Method: ${order['paymentMethod']}',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Transaction ID: ${order['TnxId']}',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              SizedBox(height: 10),
+                              Divider(),
+                              Text('Items:',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: orderItems.length,
+                                itemBuilder: (context, itemIndex) {
+                                  final item = orderItems[itemIndex];
+                                  double price = double.tryParse(
+                                          orderItemsPrices[itemIndex]
+                                              .toString()) ??
+                                      0.0;
+                                  int quantity = int.tryParse(
+                                          orderItemsQuantity[itemIndex]
+                                              .toString()) ??
+                                      1;
+                                  double itemTotalPrice = price * quantity;
+
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Text(
+                                      '• ${item} (${quantity}) = BDT (${price.toStringAsFixed(2)} x $quantity) = BDT ${itemTotalPrice.toStringAsFixed(2)}',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  );
+                                },
+                              ),
+                              Divider(),
+                              Text(
+                                  'Total Price: BDT ${orderTotalCost.toStringAsFixed(2)}',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-            Text(
-              'Total Amount: BDT ${totalAmount.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: Center(child: CircularProgressIndicator()),
             ),
-            SizedBox(height: 10),
-          ],
-        ),
+        ],
       ),
     );
   }

@@ -11,8 +11,10 @@ class Myorder extends StatefulWidget {
 class MyorderState extends State<Myorder> {
   late Client client;
   late Databases database;
+  late Account account;
 
   List<Map<String, dynamic>> cartItems = [];
+  Map<String, dynamic> userDetails = {};
   bool isLoading = false;
   double totalAmount = 0.0;
 
@@ -26,8 +28,53 @@ class MyorderState extends State<Myorder> {
       ..setProject('676506150033480a87c5'); // Replace with your project ID
 
     database = Databases(client);
+    account = Account(client);
 
     fetchCartData();
+    fetchUserDetails();
+  }
+
+  Future<void> fetchUserDetails() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      firebase_auth.User? firebaseUser =
+          firebase_auth.FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser == null) {
+        Fluttertoast.showToast(msg: 'Please log in to view user details');
+        return;
+      }
+
+      // Fetch user details from Appwrite
+      final response = await database.listDocuments(
+        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
+        collectionId:
+            '67650e290037f19f628f', // Replace with your user collection ID
+      );
+
+      // Find the user document that matches the Firebase user's email
+      var userDoc = response.documents.firstWhere(
+        (doc) => doc.data['Email'] == firebaseUser.email,
+      );
+
+      if (userDoc != null) {
+        setState(() {
+          userDetails = {
+            'name': userDoc.data['fullName'],
+          };
+        });
+      } else {
+        Fluttertoast.showToast(msg: 'User details not found in Appwrite');
+      }
+    } catch (e) {
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> fetchCartData() async {
@@ -63,19 +110,21 @@ class MyorderState extends State<Myorder> {
             'TotalAmount': doc.data['TotalAmount'],
             'name': doc.data['Name'] ?? 'No Name', // Add the 'Name' field here
             'TnxId': doc.data['TnxId'],
+            'RoomNumber': doc.data['RoomNumber'] ?? 'Given Nothing',
+            'OrderItemsList': doc.data['OrderItemsList'] ?? [],
+            'orderItemsQuantity': doc.data['orderItemsQuantity'] ?? [],
+            'orderItemsPrices': doc.data['orderItemsPrices'] ?? [],
           };
         }).toList();
 
         // Recalculate the total amount
         totalAmount = cartItems.fold(
-            0.0,
-            (sum, item) =>
-                sum +
-                (item['TotalAmount'] ?? 0.0)); // Use the 'TotalAmount' field
+          0.0,
+          (sum, item) =>
+              sum + (item['TotalAmount'] ?? 0.0), // Use the 'TotalAmount' field
+        );
       });
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error fetching cart: $e')));
     } finally {
       setState(() {
         isLoading = false; // Hide the progress bar after the data is fetched
@@ -91,6 +140,31 @@ class MyorderState extends State<Myorder> {
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
+            // Display user details
+            if (userDetails.isNotEmpty)
+              Card(
+                elevation: 5,
+                margin: EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'User Details',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 10),
+                      Text('Name: ${userDetails['name']}'),
+                      Text('Email: ${userDetails['email']}'),
+                      Text('Phone: ${userDetails['phone']}'),
+                    ],
+                  ),
+                ),
+              ),
             Expanded(
               child: isLoading
                   ? Center(child: CircularProgressIndicator())
@@ -107,9 +181,14 @@ class MyorderState extends State<Myorder> {
                         double orderTotalCost =
                             orderItems.fold(0.0, (sum, item) {
                           int itemIndex = orderItems.indexOf(item);
-                          double itemTotalPrice =
-                              (orderItemsPrices[itemIndex] ?? 0.0) *
-                                  (orderItemsQuantity[itemIndex] ?? 1);
+                          // Convert price and quantity to double before multiplication
+                          double price = double.tryParse(
+                                  orderItemsPrices[itemIndex].toString()) ??
+                              0.0;
+                          int quantity = int.tryParse(
+                                  orderItemsQuantity[itemIndex].toString()) ??
+                              1;
+                          double itemTotalPrice = price * quantity;
                           return sum + itemTotalPrice;
                         });
 
@@ -117,37 +196,50 @@ class MyorderState extends State<Myorder> {
                           elevation: 5,
                           margin: EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Transaction ID: ${order['TnxId']}',
+                                  'Room: ${order['RoomNumber']}',
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                    'Payment Method: ${order['paymentMethod']}'),
-                                SizedBox(height: 10),
-                                Text('Customer Name: ${order['name']}'),
-                                SizedBox(height: 10),
+                                  'Order ID: ${order['documentId']}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                                 Text(
-                                    'Total Amount: BDT ${order['TotalAmount']}'),
+                                  'Payment Method: ${order['paymentMethod']}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'Transaction ID: ${order['TnxId']}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 10),
                                 Divider(),
-                                Text('Items:',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
+                                Text(
+                                  'Items:',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                                 ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: orderItems.length,
                                   itemBuilder: (context, itemIndex) {
                                     final item = orderItems[itemIndex];
-                                    final quantity =
-                                        orderItemsQuantity[itemIndex];
-                                    final price = orderItemsPrices[itemIndex];
-                                    double itemTotalPrice =
-                                        (price ?? 0.0) * (quantity ?? 1);
+                                    // Convert price and quantity to double before multiplication
+                                    double price = double.tryParse(
+                                            orderItemsPrices[itemIndex]
+                                                .toString()) ??
+                                        0.0;
+                                    int quantity = int.tryParse(
+                                            orderItemsQuantity[itemIndex]
+                                                .toString()) ??
+                                        1;
+                                    double itemTotalPrice = price * quantity;
 
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -161,7 +253,7 @@ class MyorderState extends State<Myorder> {
                                 ),
                                 Divider(),
                                 Text(
-                                  'Total Price: BDT ${order['TotalAmount']}',
+                                  'Total Price: BDT ${orderTotalCost.toStringAsFixed(2)}', // Use orderTotalCost here
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ],
