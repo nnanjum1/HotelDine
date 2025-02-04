@@ -23,7 +23,6 @@ class _ViewItemState extends State<ViewItem> {
     'Drinks',
     'Appetizers',
     'Dessert',
-    'Beverages'
   ];
   String selectedCategory = 'All';
 
@@ -43,8 +42,10 @@ class _ViewItemState extends State<ViewItem> {
 
   Future<void> fetchItems() async {
     setState(() {
-      isLoading = true; // Show loading indicator before fetching
+      isLoading = true;
+      selectedCategory = 'All'; // Reset category to "All"
     });
+
     try {
       final result = await database.listDocuments(
         databaseId: '67650e170015d7a01bc8', // Replace with your database ID
@@ -54,21 +55,21 @@ class _ViewItemState extends State<ViewItem> {
       setState(() {
         items = result.documents.map((doc) {
           return {
-            'documentId': doc.$id, // Store the document ID
+            'documentId': doc.$id,
             'itemName': doc.data['FoodItemName'],
             'itemDescription': doc.data['Description'],
             'category': doc.data['Category'],
             'price': doc.data['Price'],
-            'image': doc.data['ImageUrl'], // Use the stored image URL
+            'image': doc.data['ImageUrl'],
           };
         }).toList();
 
         filteredItems = items;
-        isLoading = false; // Hide loading indicator after fetching
+        isLoading = false;
       });
     } catch (e) {
       setState(() {
-        isLoading = false; // Hide loading indicator if there's an error
+        isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching items: $e')),
