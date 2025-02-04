@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hoteldineflutter/pages/AdminPage/addroom.dart';
 import 'package:hoteldineflutter/pages/AdminPage/adminpage.dart';
 import 'package:hoteldineflutter/pages/AdminPage/viewroom.dart';
-import 'package:hoteldineflutter/pages/AdminPage/restaurantbutton.dart';
+import 'package:hoteldineflutter/pages/AdminPage/admindashboardrestaurant.dart';
 
 import 'managebookinglist.dart';
 
