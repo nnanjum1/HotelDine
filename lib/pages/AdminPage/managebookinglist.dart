@@ -144,9 +144,13 @@ class _UserBookingListState extends State<UserBookingList> {
                                       const SizedBox(height: 8),
                                       Text('Phone: ${item['Phone']}'),
                                       Text(
-                                          'Check-in: ${item['Check_in_Date']}'),
+                                        'Check-in: ${item['Check_in_Date']}',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
                                       Text(
-                                          'Check-out: ${item['Check_out_date']}'),
+                                        'Check-out: ${item['Check_out_date']}',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
                                       Text('Room No: ${item['RoomNumber']}'),
                                       Text(
                                           'Payment: ${item['PaymentMethod']} (${item['TransactionID']})'),

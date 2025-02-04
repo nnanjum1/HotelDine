@@ -153,8 +153,14 @@ class _MyBookingState extends State<MyBooking> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text('Phone: ${item['Phone']}'),
-                                  Text('Check-in: ${item['Check_in_Date']}'),
-                                  Text('Check-out: ${item['Check_out_date']}'),
+                                  Text(
+                                    'Check-in: ${item['Check_in_Date']}',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                  Text(
+                                    'Check-out: ${item['Check_out_date']}',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
                                   Text('Room No: ${item['RoomNumber']}'),
                                   Text(
                                       'Payment: ${item['PaymentMethod']} (${item['TransactionID']})'),
