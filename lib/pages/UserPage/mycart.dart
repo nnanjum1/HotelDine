@@ -2,21 +2,11 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hoteldineflutter/pages/UserPage/availablefoods.dart';
-import 'package:hoteldineflutter/pages/UserPage/restaurantpayment.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// Import Paynow screen
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:hoteldineflutter/pages/UserPage/restaurantpayment.dart';
 
 class Mycart extends StatefulWidget {
-  final String itemName;
-  final String price;
-  final String imageUrl;
-
-  Mycart({
-    required this.itemName,
-    required this.price,
-    required this.imageUrl,
-  });
-
   @override
   MycartState createState() => MycartState();
 }
@@ -24,11 +14,10 @@ class Mycart extends StatefulWidget {
 class MycartState extends State<Mycart> {
   List<Map<String, dynamic>> cartItems = [];
   double totalAmount = 0.0;
-  bool isLoading = false; // To control the visibility of the progress bar
+  bool isLoading = false;
 
   late Client client;
   late Databases database;
-  late Storage storage;
 
   @override
   void initState() {
@@ -39,18 +28,16 @@ class MycartState extends State<Mycart> {
       ..setProject('676506150033480a87c5');
 
     database = Databases(client);
-    storage = Storage(client);
 
-    fetchCartData(); // Fetch stored cart data when screen loads
+    fetchCartData(); // Fetch cart data when the screen loads
   }
 
   Future<void> fetchCartData() async {
     setState(() {
-      isLoading = true; // Show the progress bar when data is being fetched
+      isLoading = true;
     });
 
     try {
-      // Get the current user from Firebase
       firebase_auth.User? user =
           firebase_auth.FirebaseAuth.instance.currentUser;
 
@@ -59,54 +46,36 @@ class MycartState extends State<Mycart> {
         return;
       }
 
-      // Fetch all documents from Appwrite
       final response = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679e8489002cd468bb6b',
       );
 
-      // Filter documents based on the current user's email
       setState(() {
         cartItems = response.documents.where((doc) {
-          return doc.data['Email'] ==
-              user.email; // Match email field in Appwrite with Firebase email
+          return doc.data['Email'] == user.email;
         }).map((doc) {
           return {
             'documentId': doc.$id,
             'cartItemName': doc.data['cartItemName'] ?? 'Unknown Item',
             'price': (doc.data['Price'] as num?)?.toDouble() ?? 0.0,
-            'imageUrl': doc.data['ImageUrl'] ?? '',
             'quantity': (doc.data['Quantity'] as num?)?.toInt() ?? 1,
             'Email': doc.data['Email'],
           };
         }).toList();
 
-        // Combine duplicate items with the same name and increase their quantity
-        List<Map<String, dynamic>> updatedCartItems = [];
-        for (var item in cartItems) {
-          int existingIndex = updatedCartItems.indexWhere((existingItem) =>
-              existingItem['cartItemName'] == item['cartItemName']);
-          if (existingIndex == -1) {
-            // Item doesn't exist in the list, add it
-            updatedCartItems.add(item);
-          } else {
-            // Item exists, increase the quantity
-            updatedCartItems[existingIndex]['quantity'] += item['quantity'];
-          }
-        }
-
-        cartItems = updatedCartItems;
-
         // Recalculate the total amount
         totalAmount = cartItems.fold(
-            0.0, (sum, item) => sum + (item['price'] * item['quantity']));
+          0.0,
+          (sum, item) => sum + (item['price'] * item['quantity']),
+        );
       });
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error fetching cart: $e')));
     } finally {
       setState(() {
-        isLoading = false; // Hide the progress bar after the data is fetched
+        isLoading = false;
       });
     }
   }
@@ -118,11 +87,12 @@ class MycartState extends State<Mycart> {
         cartItems[index]['quantity'] = 1;
       }
       totalAmount = cartItems.fold(
-          0.0, (sum, item) => sum + (item['price'] * item['quantity']));
+        0.0,
+        (sum, item) => sum + (item['price'] * item['quantity']),
+      );
     });
   }
 
-  // Add this method to show the confirmation dialog
   void showDeleteConfirmationDialog(int index) {
     showDialog(
       context: context,
@@ -152,17 +122,14 @@ class MycartState extends State<Mycart> {
 
   void removeItemFromCart(int index) async {
     try {
-      // Get the document ID of the item you want to delete
       String documentId = cartItems[index]['documentId'];
 
-      // Delete the item from the Appwrite database
       await database.deleteDocument(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679e8489002cd468bb6b',
         documentId: documentId,
       );
 
-      // Remove the item from the UI list
       setState(() {
         totalAmount -= cartItems[index]['price'] * cartItems[index]['quantity'];
         cartItems.removeAt(index);
@@ -170,49 +137,6 @@ class MycartState extends State<Mycart> {
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error deleting item: $e')));
-    }
-  }
-
-  Future<void> saveCartToDatabase() async {
-    try {
-      for (var item in cartItems) {
-        await database.createDocument(
-          databaseId: '67650e170015d7a01bc8',
-          collectionId: '679d386f000950a1c082',
-          documentId: ID.unique(),
-          data: {
-            'ItemName': item['cartItemName'],
-            'Price': item['price'],
-            'Quantity': item['quantity'],
-          },
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error saving cart: $e')));
-    }
-  }
-
-  Future<void> _reloadCart() async {
-    setState(() {
-      isLoading = true; // Show the progress bar during reload
-    });
-
-    try {
-      cartItems.clear();
-      totalAmount = 0.0;
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.remove('cart_items');
-      setState(() {});
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Cart data has been cleared.')));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error clearing cart data: $e')));
-    } finally {
-      setState(() {
-        isLoading = false; // Hide the progress bar after reload
-      });
     }
   }
 
@@ -227,7 +151,7 @@ class MycartState extends State<Mycart> {
           children: [
             if (isLoading)
               Center(
-                child: CircularProgressIndicator(), // Progress bar during load
+                child: CircularProgressIndicator(),
               )
             else if (cartItems.isEmpty)
               Expanded(
@@ -267,17 +191,31 @@ class MycartState extends State<Mycart> {
                   itemBuilder: (context, index) {
                     var item = cartItems[index];
                     return ListTile(
-                      leading: Image.network(item['imageUrl'],
-                          width: 50, height: 50, fit: BoxFit.cover),
                       title: Text(item['cartItemName'],
                           style: TextStyle(color: Colors.black)),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('BDT ${item['price']}'),
-                          Text('X ${item['quantity']}',
-                              style:
-                                  TextStyle(fontSize: 18, color: Colors.red)),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.remove),
+                                onPressed: () {
+                                  updateQuantity(index, -1);
+                                },
+                              ),
+                              Text('${item['quantity']}',
+                                  style: TextStyle(
+                                      fontSize: 18, color: Colors.red)),
+                              IconButton(
+                                icon: Icon(Icons.add),
+                                onPressed: () {
+                                  updateQuantity(index, 1);
+                                },
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       trailing: IconButton(
@@ -307,12 +245,12 @@ class MycartState extends State<Mycart> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        saveCartToDatabase(); // Save the cart items to the database (if needed)
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => Paynow(
-                              cartItems: cartItems, // Pass the cart items
+                              cartItems:
+                                  cartItems, // Pass the updated cart items
                               totalAmount: totalAmount, // Pass the total amount
                             ),
                           ),
