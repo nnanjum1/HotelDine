@@ -53,7 +53,8 @@ class _LoginState extends State<login> {
         );
       } else {
         // ✅ **User Login with Firebase**
-        final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        final userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailAddress.text.trim(),
           password: password.text.trim(),
         );
@@ -80,7 +81,7 @@ class _LoginState extends State<login> {
       setState(() {
         errorMessage = e.code == 'user-not-found'
             ? 'No user found for that email.'
-            : 'Incorrect email or password. Try again.';
+            : 'Wrong Credential. Try again.';
       });
     }
   }
@@ -157,7 +158,6 @@ class _LoginState extends State<login> {
                               borderRadius: BorderRadius.circular(10.0),
                               borderSide: BorderSide.none,
                             ),
-
                             suffixIcon: IconButton(
                               icon: Icon(isPasswordVisible
                                   ? Icons.visibility_off
@@ -199,8 +199,13 @@ class _LoginState extends State<login> {
                           children: [
                             TextButton(
                               onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=> ForgotPasswordPage()),)  ;
-                                    },
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          ForgotPasswordPage()),
+                                );
+                              },
                               child: const Text(
                                 'Forgot Password?',
                                 style: TextStyle(color: Colors.blue),
@@ -220,7 +225,8 @@ class _LoginState extends State<login> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(26),
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10.0, horizontal: 25.0),
                           ),
                           child: const Text(
                             'Login',
