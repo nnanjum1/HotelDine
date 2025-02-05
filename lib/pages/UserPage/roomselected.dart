@@ -157,7 +157,6 @@ class _RoomSelectedState extends State<RoomSelected> {
     }
   }
 
-  // Function to reload the page
   void reloadPage() {
     setState(() {
       isLoading = true;
@@ -173,7 +172,6 @@ class _RoomSelectedState extends State<RoomSelected> {
       appBar: AppBar(
         title: const Text('Choose Room'),
         actions: [
-          // Reload button in the top right corner
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: reloadPage,
