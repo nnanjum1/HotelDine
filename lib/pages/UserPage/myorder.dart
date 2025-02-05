@@ -116,6 +116,7 @@ class MyorderState extends State<Myorder> {
         );
       });
     } catch (e) {
+      Fluttertoast.showToast(msg: 'Error fetching cart data: $e');
     } finally {
       setState(() {
         isLoading = false;
@@ -127,169 +128,183 @@ class MyorderState extends State<Myorder> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            if (userDetails.isNotEmpty)
-              Card(
-                elevation: 5,
-                margin: EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'User Details',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 10),
-                      Text('Name: ${userDetails['name']}'),
-                    ],
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : cartItems.isEmpty
+              ? const Center(
+                  child: Text(
+                    'You have no bookings history!',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ),
-            Expanded(
-              child: isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: cartItems.length,
-                      itemBuilder: (context, index) {
-                        final order = cartItems[index];
-                        final List orderItems = order['OrderItemsList'] ?? [];
-                        final List orderItemsQuantity =
-                            order['orderItemsQuantity'] ?? [];
-                        final List orderItemsPrices =
-                            order['orderItemsPrices'] ?? [];
-
-                        double orderTotalCost =
-                            orderItems.fold(0.0, (sum, item) {
-                          int itemIndex = orderItems.indexOf(item);
-                          double price = double.tryParse(
-                                  orderItemsPrices[itemIndex].toString()) ??
-                              0.0;
-                          int quantity = int.tryParse(
-                                  orderItemsQuantity[itemIndex].toString()) ??
-                              1;
-                          double itemTotalPrice = price * quantity;
-                          return sum + itemTotalPrice;
-                        });
-
-                        Color statusColor =
-                            order['Status'] == 'Order is ready!!'
-                                ? Colors.green
-                                : order['Status'] == 'Order cancelled'
-                                    ? Colors.red
-                                    : Colors.brown;
-
-                        return Card(
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      if (userDetails.isNotEmpty)
+                        Card(
                           elevation: 5,
                           margin: EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'User Details',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 10),
+                                Text('Name: ${userDetails['name']}'),
+                              ],
+                            ),
                           ),
-                          child: Stack(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Room: ${order['RoomNumber']}',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      'Order ID: ${order['documentId']}',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      'Payment Method: ${order['paymentMethod']}',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      'Transaction ID: ${order['TnxId']}',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Divider(),
-                                    Text(
-                                      'Items:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: NeverScrollableScrollPhysics(),
-                                      itemCount: orderItems.length,
-                                      itemBuilder: (context, itemIndex) {
-                                        final item = orderItems[itemIndex];
-                                        double price = double.tryParse(
-                                                orderItemsPrices[itemIndex]
-                                                    .toString()) ??
-                                            0.0;
-                                        int quantity = int.tryParse(
-                                                orderItemsQuantity[itemIndex]
-                                                    .toString()) ??
-                                            1;
-                                        double itemTotalPrice =
-                                            price * quantity;
+                        ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: cartItems.length,
+                          itemBuilder: (context, index) {
+                            final order = cartItems[index];
+                            final List orderItems =
+                                order['OrderItemsList'] ?? [];
+                            final List orderItemsQuantity =
+                                order['orderItemsQuantity'] ?? [];
+                            final List orderItemsPrices =
+                                order['orderItemsPrices'] ?? [];
 
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 4),
-                                          child: Text(
-                                            '• $item (${quantity}) = BDT ${itemTotalPrice.toStringAsFixed(2)}',
-                                            style: TextStyle(fontSize: 14),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    Divider(),
-                                    Text(
-                                      'Total Price: BDT ${orderTotalCost.toStringAsFixed(2)}',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
+                            double orderTotalCost =
+                                orderItems.fold(0.0, (sum, item) {
+                              int itemIndex = orderItems.indexOf(item);
+                              double price = double.tryParse(
+                                      orderItemsPrices[itemIndex].toString()) ??
+                                  0.0;
+                              int quantity = int.tryParse(
+                                      orderItemsQuantity[itemIndex]
+                                          .toString()) ??
+                                  1;
+                              double itemTotalPrice = price * quantity;
+                              return sum + itemTotalPrice;
+                            });
+
+                            Color statusColor =
+                                order['Status'] == 'Order is ready!!'
+                                    ? Colors.green
+                                    : order['Status'] == 'Order cancelled'
+                                        ? Colors.red
+                                        : Colors.brown;
+
+                            return Card(
+                              elevation: 5,
+                              margin: EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              Positioned(
-                                top: 10,
-                                right: 10,
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: statusColor,
-                                    borderRadius: BorderRadius.circular(20),
+                              child: Stack(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(height: 10),
+                                        Text(
+                                          'Room: ${order['RoomNumber']}',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          'Order ID: ${order['documentId']}',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          'Payment Method: ${order['paymentMethod']}',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          'Transaction ID: ${order['TnxId']}',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        SizedBox(height: 10),
+                                        Divider(),
+                                        Text(
+                                          'Items:',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        ListView.builder(
+                                          shrinkWrap: true,
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
+                                          itemCount: orderItems.length,
+                                          itemBuilder: (context, itemIndex) {
+                                            final item = orderItems[itemIndex];
+                                            double price = double.tryParse(
+                                                    orderItemsPrices[itemIndex]
+                                                        .toString()) ??
+                                                0.0;
+                                            int quantity = int.tryParse(
+                                                    orderItemsQuantity[
+                                                            itemIndex]
+                                                        .toString()) ??
+                                                1;
+                                            double itemTotalPrice =
+                                                price * quantity;
+
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4),
+                                              child: Text(
+                                                '• $item (${quantity}) = BDT ${itemTotalPrice.toStringAsFixed(2)}',
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        Divider(),
+                                        Text(
+                                          'Total Price: BDT ${orderTotalCost.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  child: Text(
-                                    order['Status'],
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
+                                  Positioned(
+                                    top: 10,
+                                    right: 10,
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: statusColor,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        order['Status'],
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
     );
   }
 }
