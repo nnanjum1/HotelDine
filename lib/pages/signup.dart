@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hoteldineflutter/pages/login.dart';
 
-
 import 'Database/database.dart';
 import 'login.dart';
 
@@ -31,7 +30,8 @@ class _SignupState extends State<Signup> {
     try {
       // Firebase Authentication signup
 
-      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: userEmail.text,
         password: userPassword.text,
       );
@@ -61,8 +61,8 @@ class _SignupState extends State<Signup> {
       String errorMessage = e.code == 'weak-password'
           ? 'The password provided is too weak.'
           : e.code == 'email-already-in-use'
-          ? 'The account already exists for that email.'
-          : e.message ?? 'An error occurred';
+              ? 'The account already exists for that email.'
+              : e.message ?? 'An error occurred';
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage)),
@@ -73,10 +73,7 @@ class _SignupState extends State<Signup> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registration Failed')),
       );
-
     }
-
-
   }
 
   InputDecoration customInputDecoration(String hint, IconData icon) {
@@ -124,29 +121,32 @@ class _SignupState extends State<Signup> {
                 children: [
                   TextFormField(
                     controller: fullNameControl,
-                    decoration: customInputDecoration('Full name', Icons.person),
+                    decoration:
+                        customInputDecoration('Full name', Icons.person),
                     validator: (value) =>
-                    value!.isEmpty ? 'Please enter your full name' : null,
+                        value!.isEmpty ? 'Please enter your full name' : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: userEmail,
-                    decoration: customInputDecoration('Email address', Icons.email),
+                    decoration:
+                        customInputDecoration('Email address', Icons.email),
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => !RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                        .hasMatch(value ?? '')
-                        ? 'Please enter a valid email'
-                        : null,
+                    validator: (value) =>
+                        !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value ?? '')
+                            ? 'Please enter a valid email'
+                            : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: phoneNumber,
-                    decoration: customInputDecoration('Phone number', Icons.phone),
+                    decoration:
+                        customInputDecoration('Phone number', Icons.phone),
                     keyboardType: TextInputType.phone,
-                    validator: (value) => !RegExp(r'^\d{11}$')
-                        .hasMatch(value ?? '')
-                        ? 'Please enter a valid 11-digit phone number'
-                        : null,
+                    validator: (value) =>
+                        !RegExp(r'^\d{11}$').hasMatch(value ?? '')
+                            ? 'Please enter a valid 11-digit phone number'
+                            : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -154,56 +154,55 @@ class _SignupState extends State<Signup> {
                     decoration: customInputDecoration(
                         'Date of birth eg.(dd-mm-yyyy)', Icons.calendar_today),
                     readOnly: true,
-                      onTap: () async {
-                        DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(1900),
-                          lastDate: DateTime.now(),
-                        );
-                        if (pickedDate != null) {
-                          dobController.text =
-                          "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
-                        }
-                      },
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (pickedDate != null) {
+                        dobController.text =
+                            "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
+                      }
+                    },
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please select your date of birth';
+                      }
+                      // Parse the dd-mm-yyyy format
+                      final dateParts = value.split('-');
+                      if (dateParts.length != 3) {
+                        return 'Invalid date format';
+                      }
+                      try {
+                        final day = int.parse(dateParts[0]);
+                        final month = int.parse(dateParts[1]);
+                        final year = int.parse(dateParts[2]);
+                        final dob = DateTime(year, month, day);
 
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please select your date of birth';
-                        }
-                        // Parse the dd-mm-yyyy format
-                        final dateParts = value.split('-');
-                        if (dateParts.length != 3) {
-                          return 'Invalid date format';
-                        }
-                        try {
-                          final day = int.parse(dateParts[0]);
-                          final month = int.parse(dateParts[1]);
-                          final year = int.parse(dateParts[2]);
-                          final dob = DateTime(year, month, day);
+                        final currentDate = DateTime.now();
+                        final age = currentDate.year -
+                            dob.year -
+                            (currentDate.isBefore(DateTime(
+                                    currentDate.year, dob.month, dob.day))
+                                ? 1
+                                : 0);
 
-                          final currentDate = DateTime.now();
-                          final age = currentDate.year -
-                              dob.year -
-                              (currentDate.isBefore(DateTime(currentDate.year, dob.month, dob.day))
-                                  ? 1
-                                  : 0);
-
-                          if (age < 18) {
-                            return 'You must be at least 18 years old';
-                          }
-                        } catch (e) {
-                          return 'Invalid date format';
+                        if (age < 18) {
+                          return 'You must be at least 18 years old';
                         }
-                        return null;
-                      },
-
+                      } catch (e) {
+                        return 'Invalid date format';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: userPassword,
-                    decoration: customInputDecoration('Password', Icons.lock)
-                        .copyWith(
+                    decoration:
+                        customInputDecoration('Password', Icons.lock).copyWith(
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
@@ -227,8 +226,8 @@ class _SignupState extends State<Signup> {
                   TextFormField(
                     controller: confirmPassword,
                     decoration:
-                    customInputDecoration('Confirm password', Icons.lock)
-                        .copyWith(
+                        customInputDecoration('Confirm password', Icons.lock)
+                            .copyWith(
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscureConfirmPassword
@@ -259,7 +258,7 @@ class _SignupState extends State<Signup> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:const Color(0xFF19A7FE),
+                        backgroundColor: const Color(0xFF19A7FE),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -280,7 +279,8 @@ class _SignupState extends State<Signup> {
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => const login()),
+                            MaterialPageRoute(
+                                builder: (context) => const login()),
                           );
                         },
                         child: const Text(
