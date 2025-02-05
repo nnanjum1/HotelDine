@@ -3,7 +3,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 
 class DeleteRoom extends StatefulWidget {
-  final String roomNumber; // Room number to be deleted
+  final String roomNumber;
 
   DeleteRoom({required this.roomNumber});
 
@@ -15,8 +15,8 @@ class _DeleteRoomState extends State<DeleteRoom> {
   late Databases databases;
   late Client client;
 
-  final String databaseId = '67650e170015d7a01bc8'; // Your database ID
-  final String collectionId = '6784c4dd00332fc62aeb'; // Your collection ID
+  final String databaseId = '67650e170015d7a01bc8';
+  final String collectionId = '6784c4dd00332fc62aeb';
 
   Map<String, dynamic>? roomData; // Holds room details
   bool isLoading = true; // Tracks loading state
@@ -50,8 +50,7 @@ class _DeleteRoomState extends State<DeleteRoom> {
 
       if (documentList.documents.isNotEmpty) {
         setState(() {
-          roomData =
-              documentList.documents.first.data; // First matching document
+          roomData = documentList.documents.first.data;
           isLoading = false;
         });
       } else {

@@ -31,9 +31,8 @@ class _ViewItemState extends State<ViewItem> {
     super.initState();
 
     client = Client()
-      ..setEndpoint(
-          'https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-      ..setProject('676506150033480a87c5'); // Replace with your project ID
+      ..setEndpoint('https://cloud.appwrite.io/v1')
+      ..setProject('676506150033480a87c5');
 
     database = Databases(client);
 
@@ -43,13 +42,13 @@ class _ViewItemState extends State<ViewItem> {
   Future<void> fetchItems() async {
     setState(() {
       isLoading = true;
-      selectedCategory = 'All'; // Reset category to "All"
+      selectedCategory = 'All';
     });
 
     try {
       final result = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679914b6002ca53ab39b', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679914b6002ca53ab39b',
       );
 
       setState(() {
@@ -78,25 +77,50 @@ class _ViewItemState extends State<ViewItem> {
   }
 
   Future<void> deleteItem(String documentId) async {
-    try {
-      await database.deleteDocument(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679914b6002ca53ab39b', // Replace with your collection ID
-        documentId: documentId,
-      );
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Are you sure?'),
+          content: Text('Do you really want to delete this item?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
 
-      setState(() {
-        items.removeWhere((item) => item['documentId'] == documentId);
-        filteredItems = items;
-      });
+    if (confirmDelete == true) {
+      try {
+        await database.deleteDocument(
+          databaseId: '67650e170015d7a01bc8',
+          collectionId: '679914b6002ca53ab39b',
+          documentId: documentId,
+        );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Item deleted successfully')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting item: $e')),
-      );
+        setState(() {
+          items.removeWhere((item) => item['documentId'] == documentId);
+          filteredItems = items;
+        });
+
+        // Refresh the page
+        fetchItems();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting item: $e')),
+        );
+      }
     }
   }
 

@@ -27,7 +27,6 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
     'Drinks',
     'Appetizers',
     'Dessert',
-
   ];
 
   @override
@@ -111,106 +110,106 @@ class _FoodItemsEditState extends State<FoodItemsEdit> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Item Name Field
-                const Text('Item Name',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                TextFormField(
-                  controller: _nameController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Item name is required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Item Name Field
+                      const Text('Item Name',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      TextFormField(
+                        controller: _nameController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Item name is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
-                // Description Field
-                const Text('Description',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                TextFormField(
-                  controller: _descriptionController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Description is required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
+                      // Description Field
+                      const Text('Description',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      TextFormField(
+                        controller: _descriptionController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Description is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
-                // Category Dropdown
-                const Text('Category',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                DropdownButtonFormField<String>(
-                  value: _selectedCategory,
-                  hint: const Text('Select Category'),
-                  isExpanded: true,
-                  items: categories.map((category) {
-                    return DropdownMenuItem<String>(
-                      value: category,
-                      child: Text(category),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedCategory = newValue;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a category';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
+                      // Category Dropdown
+                      const Text('Category',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      DropdownButtonFormField<String>(
+                        value: _selectedCategory,
+                        hint: const Text('Select Category'),
+                        isExpanded: true,
+                        items: categories.map((category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedCategory = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a category';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
-                // Price Field
-                const Text('Price',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                TextFormField(
-                  controller: _priceController,
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    double? price = double.tryParse(value ?? '');
-                    if (price == null || price <= 0) {
-                      return 'Price must be greater than 0';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
+                      // Price Field
+                      const Text('Price',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      TextFormField(
+                        controller: _priceController,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          double? price = double.tryParse(value ?? '');
+                          if (price == null || price <= 0) {
+                            return 'Price must be greater than 0';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 32),
 
-                // Save Changes Button
-                Center(
-                  child: ElevatedButton(
-                    onPressed: updateItemDetails,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 10),
-                    ),
-                    child: const Text('Save Changes',
-                        style: TextStyle(color: Colors.white)),
+                      // Save Changes Button
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: updateItemDetails,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 10),
+                          ),
+                          child: const Text('Save Changes',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
