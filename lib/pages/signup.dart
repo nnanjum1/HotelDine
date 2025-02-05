@@ -1,11 +1,8 @@
 import 'dart:math';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hoteldineflutter/pages/login.dart';
-
 import 'Database/database.dart';
-import 'login.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -24,32 +21,37 @@ class _SignupState extends State<Signup> {
   final confirmPassword = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  String? emailErrorMessage;
 
   // Sign-up function
   void signUp() async {
     try {
       // Firebase Authentication signup
-
       final credential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: userEmail.text,
+        email: userEmail.text.toLowerCase(), // Make email lowercase
         password: userPassword.text,
       );
 
       if (credential.user != null) {
+        // Send email verification link
+        await credential.user!.sendEmailVerification();
+
         // Appwrite: Insert user details into the "Users" collection
         final userCollection = databaseService.getCollection('Users');
         await userCollection['create'](
           payload: {
             'fullName': fullNameControl.text,
-            'email': userEmail.text,
+            'email': userEmail.text.toLowerCase(), // Save email in lowercase
             'phone': phoneNumber.text,
             'dob': dobController.text,
           },
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully')),
+          const SnackBar(
+              content: Text(
+                  'Account created successfully. Please verify your email.')),
         );
 
         Navigator.pushReplacement(
@@ -64,18 +66,26 @@ class _SignupState extends State<Signup> {
               ? 'The account already exists for that email.'
               : e.message ?? 'An error occurred';
 
+      // Set the email error message if the error is related to the email already being in use
+      if (e.code == 'email-already-in-use') {
+        setState(() {
+          emailErrorMessage = 'The email is already exists.';
+        });
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage)),
       );
     } catch (e) {
       // Log the error
-      print('Error uploading file: $e');
+      print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registration Failed')),
       );
     }
   }
 
+  // Custom input decoration for form fields
   InputDecoration customInputDecoration(String hint, IconData icon) {
     return InputDecoration(
       filled: true,
@@ -132,21 +142,44 @@ class _SignupState extends State<Signup> {
                     decoration:
                         customInputDecoration('Email address', Icons.email),
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) =>
-                        !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value ?? '')
-                            ? 'Please enter a valid email'
-                            : null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an email';
+                      }
+                      // Regex to validate email format and ensure lowercase letters only
+                      if (!RegExp(r'^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$')
+                          .hasMatch(value)) {
+                        return 'Please enter a valid email address in lowercase';
+                      }
+                      return null;
+                    },
                   ),
+                  // Display email error message if it exists
+                  if (emailErrorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        emailErrorMessage!,
+                        style: TextStyle(color: Colors.red, fontSize: 14),
+                      ),
+                    ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: phoneNumber,
                     decoration:
                         customInputDecoration('Phone number', Icons.phone),
                     keyboardType: TextInputType.phone,
-                    validator: (value) =>
-                        !RegExp(r'^\d{11}$').hasMatch(value ?? '')
-                            ? 'Please enter a valid 11-digit phone number'
-                            : null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a phone number';
+                      }
+                      // Regex for Bangladeshi 11-digit phone number validation
+                      if (!RegExp(r'^(?:\+88|88)?01[3-9]\d{8}$')
+                          .hasMatch(value)) {
+                        return 'Please enter a valid Bangladeshi phone number';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

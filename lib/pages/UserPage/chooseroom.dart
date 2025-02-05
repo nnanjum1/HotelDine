@@ -569,7 +569,7 @@ class ChooseRoomState extends State<ChooseRoom> {
                                   isBooked ? Colors.grey : Color(0xFFE9FBFF),
                             ),
                             child: Text(
-                              isBooked ? 'Booked' : 'Select',
+                              isBooked ? 'Room booked' : 'Select',
                               style: TextStyle(
                                 color:
                                     isBooked ? Colors.white : Colors.blueAccent,
