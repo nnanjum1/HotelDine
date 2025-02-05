@@ -74,6 +74,7 @@ class _PaynowState extends State<Paynow> {
         'OrderItemsList': orderItemsNames,
         'orderItemsQuantity': orderItemsQuantity,
         'orderItemsPrices': orderItemsPrices,
+        'Status': 'On process..',
       };
 
       // Save to database
@@ -83,8 +84,6 @@ class _PaynowState extends State<Paynow> {
         documentId: ID.unique(),
         data: orderData,
       );
-
-      Fluttertoast.showToast(msg: 'Payment confirmed and order saved!');
     } catch (e) {
       print('Error saving order: $e');
     }

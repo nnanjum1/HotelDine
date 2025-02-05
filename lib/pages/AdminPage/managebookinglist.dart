@@ -95,6 +95,25 @@ class _UserBookingListState extends State<UserBookingList> {
     }
   }
 
+  Future<void> cancelBooking(String documentId) async {
+    try {
+      await database.updateDocument(
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '67a066880000448ec129',
+        documentId: documentId,
+        data: {'Status': 'Cancelled'},
+      );
+      fetchAllBookings();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking Cancelled Successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error cancelling booking: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,6 +138,8 @@ class _UserBookingListState extends State<UserBookingList> {
                         itemBuilder: (context, index) {
                           final item = bookingList[index];
                           bool isConfirmed = item['Status'] == 'Confirmed';
+                          bool isCancelled = item['Status'] == 'Cancelled';
+                          bool isButtonDisabled = isConfirmed || isCancelled;
 
                           return Card(
                             margin: const EdgeInsets.symmetric(
@@ -162,28 +183,61 @@ class _UserBookingListState extends State<UserBookingList> {
                                             fontWeight: FontWeight.bold),
                                       ),
                                       const SizedBox(height: 15),
-                                      ElevatedButton(
-                                        onPressed: isConfirmed
-                                            ? null
-                                            : () => confirmBooking(
-                                                item['documentId']),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isConfirmed
-                                              ? Colors.grey
-                                              : Colors.blue,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 8),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: isButtonDisabled
+                                                ? null
+                                                : () => cancelBooking(
+                                                    item['documentId']),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: isButtonDisabled
+                                                  ? Colors.grey
+                                                  : Colors.red,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 8),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(18),
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          'Confirm Booking',
-                                          style: TextStyle(
-                                            fontSize: 16,
+                                          ElevatedButton(
+                                            onPressed: isButtonDisabled
+                                                ? null
+                                                : () => confirmBooking(
+                                                    item['documentId']),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: isButtonDisabled
+                                                  ? Colors.grey
+                                                  : Colors.blue,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 8),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(18),
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              'Confirm Booking',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -197,7 +251,9 @@ class _UserBookingListState extends State<UserBookingList> {
                                     decoration: BoxDecoration(
                                       color: isConfirmed
                                           ? Colors.green
-                                          : Colors.brown,
+                                          : isCancelled
+                                              ? Colors.red
+                                              : Colors.brown,
                                       borderRadius: BorderRadius.circular(5),
                                     ),
                                     child: Text(

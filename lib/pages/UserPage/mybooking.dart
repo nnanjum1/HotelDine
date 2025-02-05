@@ -108,9 +108,12 @@ class _MyBookingState extends State<MyBooking> {
                         itemCount: cartItems.length,
                         itemBuilder: (context, index) {
                           final item = cartItems[index];
+
                           Color statusColor = item['Status'] == 'Confirmed'
                               ? Colors.green
-                              : Colors.brown;
+                              : item['Status'] == 'Cancelled'
+                                  ? Colors.red
+                                  : Colors.brown;
 
                           return Card(
                             margin: const EdgeInsets.symmetric(
