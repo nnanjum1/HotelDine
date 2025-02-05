@@ -110,14 +110,7 @@ class AvailablefoodsState extends State<Availablefoods> {
 
       if (result.documents.isNotEmpty) {
         // Item is already in the cart
-        Fluttertoast.showToast(
-          msg: 'This item is already in your cart!',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.black,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
+
         return;
       }
 
