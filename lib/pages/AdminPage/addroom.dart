@@ -7,7 +7,7 @@ import 'package:appwrite/appwrite.dart'; // Import Appwrite SDK
 import 'package:appwrite/models.dart' as models; // For Appwrite models
 import 'package:uuid/uuid.dart';
 
-import '../Database/database.dart'; // For generating unique filenames
+import '../Database/database.dart';
 
 class AddRoom extends StatefulWidget {
   @override
@@ -20,7 +20,7 @@ class _AddRoom extends State<AddRoom> {
   final roomDescription = TextEditingController();
   final roomCategory = TextEditingController();
   final roomPrice = TextEditingController();
-  int ? selectedValue;
+  int? selectedValue;
 
   File? _image;
   final ImagePicker _picker = ImagePicker();
@@ -35,18 +35,17 @@ class _AddRoom extends State<AddRoom> {
   void initState() {
     super.initState();
 
-    // Initialize Appwrite Client
     client = Client()
-      ..setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-      ..setProject('676506150033480a87c5'); // Replace with your Appwrite project ID
+      ..setEndpoint('https://cloud.appwrite.io/v1')
+      ..setProject('676506150033480a87c5');
 
     database = Databases(client);
     storage = Storage(client);
   }
 
-  // Function to pick image from gallery
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -61,9 +60,7 @@ class _AddRoom extends State<AddRoom> {
         SnackBar(content: Text('Please select an image')),
       );
       return;
-
     }
-
 
     // Check if the room number is already taken
     try {
@@ -77,8 +74,8 @@ class _AddRoom extends State<AddRoom> {
 
       if (existingRooms.documents.isNotEmpty) {
         setState(() {
-          // Show error below the room number field
-          roomNumberError = 'Room number is already used. Please choose a different one.';
+          roomNumberError =
+              'Room number is already used. Please choose a different one.';
         });
         return;
       }
@@ -92,7 +89,8 @@ class _AddRoom extends State<AddRoom> {
       try {
         // Upload the file to Appwrite Storage
         models.File uploadedFile = await storage.createFile(
-          bucketId: '6784cf9d002262613d60', // Replace with your storage bucket ID
+          bucketId:
+              '6784cf9d002262613d60', // Replace with your storage bucket ID
           fileId: fileId,
           file: InputFile.fromPath(path: _image!.path),
         );
@@ -107,7 +105,8 @@ class _AddRoom extends State<AddRoom> {
               'RoomName': roomName.text,
               'RoomDescription': roomDescription.text,
               'RoomCategory': roomCategory.text,
-              'price': double.tryParse(roomPrice.text) ?? 0.0, // Convert price to double
+              'price': double.tryParse(roomPrice.text) ??
+                  0.0, // Convert price to double
               'ImageUrl': fileId, // Store image file ID
             },
           );
@@ -169,24 +168,25 @@ class _AddRoom extends State<AddRoom> {
                   borderRadius: BorderRadius.circular(15.0),
                   borderSide: BorderSide.none,
                 ),
-                errorText: roomNumberError, // Ensure this updates dynamically
+                errorText: roomNumberError,
                 prefixIcon: Padding(
-                  padding: const EdgeInsets.all(8.0), // Add padding here to control the space around the dropdown
+                  padding: const EdgeInsets.all(8.0),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<int>(
                       value: selectedValue,
                       hint: Text("Select"),
                       items: [10, 20, 30, 40, 50]
                           .map((int value) => DropdownMenuItem<int>(
-                        value: value,
-                        child: Text(value.toString()),
-                      ))
+                                value: value,
+                                child: Text(value.toString()),
+                              ))
                           .toList(),
                       onChanged: (int? newValue) {
                         setState(() {
                           selectedValue = newValue;
                           roomNumber.text = newValue != null ? '$newValue' : '';
-                          roomNumberError = null; // Clear error when selecting a prefix
+                          roomNumberError =
+                              null; // Clear error when selecting a prefix
                         });
                       },
                     ),
@@ -202,13 +202,15 @@ class _AddRoom extends State<AddRoom> {
                 String? result = await showDialog(
                   context: context,
                   builder: (context) {
-                    TextEditingController numberController = TextEditingController();
+                    TextEditingController numberController =
+                        TextEditingController();
                     return AlertDialog(
                       title: Text('Enter Room Number'),
                       content: TextField(
                         controller: numberController,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(hintText: 'Enter at least 2 digits',
+                        decoration: InputDecoration(
+                            hintText: 'Enter at least 2 digits',
                             hintStyle: TextStyle(color: Colors.grey[500])),
                       ),
                       actions: [
@@ -221,10 +223,13 @@ class _AddRoom extends State<AddRoom> {
                         TextButton(
                           onPressed: () {
                             String enteredText = numberController.text.trim();
-                            if (enteredText.length >= 2 && RegExp(r'^\d+$').hasMatch(enteredText)) {
+                            if (enteredText.length >= 2 &&
+                                RegExp(r'^\d+$').hasMatch(enteredText)) {
                               Navigator.pop(context, enteredText);
                             } else {
-                              Fluttertoast.showToast(msg: "Enter at least 2 digits after the prefix.");
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "Enter at least 2 digits after the prefix.");
                             }
                           },
                           child: Text('Done'),
@@ -239,14 +244,14 @@ class _AddRoom extends State<AddRoom> {
                     roomNumber.text = '$selectedValue$result';
                     roomNumberError = null; // Clear error on valid input
                   } else {
-                    roomNumberError = "Room number must have at least 2 digits after the prefix.";
-                    roomNumber.text = ''; // Reset room number if invalid input is given
+                    roomNumberError =
+                        "Room number must have at least 2 digits after the prefix.";
+                    roomNumber.text =
+                        ''; // Reset room number if invalid input is given
                   }
                 });
               },
-            )
-            ,
-
+            ),
             SizedBox(height: 12),
             TextFormField(
               controller: roomName,
@@ -281,9 +286,9 @@ class _AddRoom extends State<AddRoom> {
             DropdownButtonFormField<String>(
               items: ['Air Conditioning', 'Non Air Conditioning']
                   .map((category) => DropdownMenuItem(
-                value: category,
-                child: Text(category),
-              ))
+                        value: category,
+                        child: Text(category),
+                      ))
                   .toList(),
               onChanged: (value) {
                 roomCategory.text = value ?? '';
@@ -322,9 +327,10 @@ class _AddRoom extends State<AddRoom> {
                 borderRadius: BorderRadius.circular(10),
                 image: _image != null
                     ? DecorationImage(
-                  image: FileImage(_image!),
-                  fit: BoxFit.cover,
-                ): null,
+                        image: FileImage(_image!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
             ),
             SizedBox(height: 24),
