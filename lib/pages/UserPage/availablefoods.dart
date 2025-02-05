@@ -34,7 +34,6 @@ class AvailablefoodsState extends State<Availablefoods> {
     'Drinks',
     'Appetizers',
     'Dessert',
-    'Beverages'
   ];
   String selectedCategory = 'All';
 
