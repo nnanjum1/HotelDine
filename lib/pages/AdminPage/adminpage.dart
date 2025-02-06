@@ -17,7 +17,7 @@ class adminPage extends StatelessWidget {
         scrollDirection: Axis.vertical,
         child: Column(
           children: [
-            // Container with an image
+
             Container(
               width: 452,
               height: 296,
