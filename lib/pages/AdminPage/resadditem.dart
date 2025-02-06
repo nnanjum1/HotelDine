@@ -162,7 +162,7 @@ class _AddItem extends State<AddItem> {
               SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 items:
-                    ['Platter', 'Drinks', 'Appetizers', 'Dessert', 'Beverages']
+                    ['Platter', 'Drinks', 'Appetizers', 'Dessert']
                         .map((category) => DropdownMenuItem(
                               value: category,
                               child: Text(category),
