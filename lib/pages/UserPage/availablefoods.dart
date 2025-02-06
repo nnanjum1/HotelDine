@@ -53,32 +53,32 @@ class AvailablefoodsState extends State<Availablefoods> {
 
   Future<void> fetchItems() async {
     setState(() {
-      isLoading = true; // Show loading indicator before fetching
+      isLoading = true;
     });
     try {
       final result = await database.listDocuments(
         databaseId: '67650e170015d7a01bc8',
-        collectionId: '679914b6002ca53ab39b', //food container
+        collectionId: '679914b6002ca53ab39b',
       );
 
       setState(() {
         items = result.documents.map((doc) {
           return {
-            'documentId': doc.$id, // Store the document ID
+            'documentId': doc.$id,
             'itemName': doc.data['FoodItemName'],
             'itemDescription': doc.data['Description'],
             'category': doc.data['Category'],
             'price': doc.data['Price'],
-            'image': doc.data['ImageUrl'], // Use the stored image URL
+            'image': doc.data['ImageUrl'],
           };
         }).toList();
 
         filteredItems = items;
-        isLoading = false; // Hide loading indicator after fetching
+        isLoading = false;
       });
     } catch (e) {
       setState(() {
-        isLoading = false; // Hide loading indicator if there's an error
+        isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching items: $e')),
@@ -86,7 +86,6 @@ class AvailablefoodsState extends State<Availablefoods> {
     }
   }
 
-  // Save cart details to the database
   void saveCartToDatabase(String itemName, String itemDescription, String price,
       String imageUrl) async {
     try {
@@ -97,10 +96,9 @@ class AvailablefoodsState extends State<Availablefoods> {
         return;
       }
 
-      // Check if the item already exists in the cart for this user
       final result = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '679e8489002cd468bb6b', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '679e8489002cd468bb6b',
         queries: [
           Query.equal('Email', user.email ?? ''),
           Query.equal('cartItemName', itemName),
@@ -108,12 +106,9 @@ class AvailablefoodsState extends State<Availablefoods> {
       );
 
       if (result.documents.isNotEmpty) {
-        // Item is already in the cart
-
         return;
       }
 
-      // Generate a unique ID for the cart item
       final String cartItemId = ID.unique();
 
       await database.createDocument(
@@ -184,8 +179,8 @@ class AvailablefoodsState extends State<Availablefoods> {
         iconTheme: IconThemeData(color: Colors.black),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh), // Reload icon
-            onPressed: fetchItems, // Call reload function
+            icon: Icon(Icons.refresh),
+            onPressed: fetchItems,
           ),
         ],
       ),
@@ -213,9 +208,7 @@ class AvailablefoodsState extends State<Availablefoods> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: isLoading
-          ? Center(
-              child:
-                  CircularProgressIndicator()) // Show loading spinner while data is being fetched
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 children: [
@@ -223,7 +216,6 @@ class AvailablefoodsState extends State<Availablefoods> {
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       children: [
-                        // Search Field
                         Flexible(
                           flex: 3,
                           child: TextField(
@@ -241,11 +233,9 @@ class AvailablefoodsState extends State<Availablefoods> {
                             ),
                           ),
                         ),
+                        SizedBox(width: 10),
                         SizedBox(
-                            width: 10), // Space between search and dropdown
-                        // Dropdown with fixed width
-                        SizedBox(
-                          width: 130, // Adjust as needed
+                          width: 130,
                           child: DropdownButtonFormField<String>(
                             value: selectedCategory,
                             onChanged: (String? newValue) {
@@ -346,12 +336,11 @@ class AvailablefoodsState extends State<Availablefoods> {
                                       ),
                                       SizedBox(height: 8),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .end, // Aligns the child to the right
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
                                           GestureDetector(
                                             onTap: () {
-                                              // Show a toast when the button is pressed
                                               Fluttertoast.showToast(
                                                 msg:
                                                     '${item['itemName']} added to cart!',
@@ -362,7 +351,6 @@ class AvailablefoodsState extends State<Availablefoods> {
                                                 fontSize: 16.0,
                                               );
 
-                                              // Save cart item to the database (you can pass the relevant details)
                                               saveCartToDatabase(
                                                 item['itemName'],
                                                 item['itemDescription'],

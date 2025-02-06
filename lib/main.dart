@@ -27,7 +27,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// 🔹 AuthWrapper to check Firebase authentication state
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
 
@@ -41,7 +40,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
     super.initState();
-    _homePage = checkLoginStatus(); // Initialize login check
+    _homePage = checkLoginStatus();
   }
 
   Future<Widget> checkLoginStatus() async {
@@ -49,7 +48,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
     bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     String? role = prefs.getString('role');
 
-    // Debugging: Print stored values
     print("isLoggedIn: $isLoggedIn");
     print("role: $role");
 
@@ -60,14 +58,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
         return const Homepage();
       }
     } else {
-      return  getStartedPage();
+      return getStartedPage();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Widget>(
-      future: _homePage, // Get home page based on login status
+      future: _homePage,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -81,7 +79,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           return snapshot.data!;
         }
 
-        return  getStartedPage();
+        return getStartedPage();
       },
     );
   }

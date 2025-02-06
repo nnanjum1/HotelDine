@@ -50,7 +50,6 @@ class _PaynowState extends State<Paynow> {
         return;
       }
 
-      // Extracting item names, quantities, and prices from the cart
       List<String> orderItemsNames = widget.cartItems.map((item) {
         return item['cartItemName'] as String;
       }).toList();
@@ -64,7 +63,6 @@ class _PaynowState extends State<Paynow> {
         return price != null ? price.toString() : '0.0';
       }).toList();
 
-      // Prepare order data
       final orderData = {
         'paymentMethod': _selectedPaymentMethod,
         'TnxId': transactionId,
@@ -77,7 +75,6 @@ class _PaynowState extends State<Paynow> {
         'Status': 'On process..',
       };
 
-      // Save to database
       await database.createDocument(
         databaseId: '67650e170015d7a01bc8',
         collectionId: '679fb9fb0004c6321d63',
@@ -228,7 +225,6 @@ class _PaynowState extends State<Paynow> {
                       try {
                         await saveOrderHistory(transactionId, roomNumber);
 
-                        // Navigate to AvailableFood page after successful payment
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(

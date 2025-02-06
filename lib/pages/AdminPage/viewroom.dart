@@ -15,7 +15,7 @@ class _ViewRoomState extends State<ViewRoom> {
   List<Map<String, dynamic>> filteredRooms = [];
   late Databases databases;
   late Storage storage;
-  bool isLoading = true; // Add this flag to track the loading state
+  bool isLoading = true;
   final String databaseId =
       '67650e170015d7a01bc8'; // Replace with your database ID
   final String collectionId = '6784c4dd00332fc62aeb';
@@ -40,30 +40,27 @@ class _ViewRoomState extends State<ViewRoom> {
       filteredRooms = query.isEmpty
           ? rooms
           : rooms.where((room) {
-        // Convert the query to lowercase for case-insensitive matching
-        String lowerCaseQuery = query.toLowerCase();
-        String category = room['category'].toLowerCase();
-        String roomNumber = room['roomNumber'].toString();
+              // Convert the query to lowercase for case-insensitive matching
+              String lowerCaseQuery = query.toLowerCase();
+              String category = room['category'].toLowerCase();
+              String roomNumber = room['roomNumber'].toString();
 
-        // Split the query into words (the first word and remaining words)
-        List<String> queryWords = lowerCaseQuery.split(' ');
-        String firstWord = queryWords.first; // First word of the query
-        List<String> remainingWords = queryWords.skip(1).toList(); // Remaining words in the query
+              List<String> queryWords = lowerCaseQuery.split(' ');
+              String firstWord = queryWords.first;
+              List<String> remainingWords = queryWords.skip(1).toList();
 
-        // Check if the first word matches the first word in the category
-        bool firstWordMatches = category.split(' ').first.contains(firstWord);
+              bool firstWordMatches =
+                  category.split(' ').first.contains(firstWord);
 
-        // If there are remaining words, ensure they are also present in the category
-        bool remainingWordsMatch = remainingWords.every((word) {
-          return category.contains(word);
-        });
+              bool remainingWordsMatch = remainingWords.every((word) {
+                return category.contains(word);
+              });
 
-        // Return true if first word matches and all remaining words match, or if room number matches
-        return (firstWordMatches && remainingWordsMatch) || roomNumber.contains(query);
-      }).toList();
+              return (firstWordMatches && remainingWordsMatch) ||
+                  roomNumber.contains(query);
+            }).toList();
     });
   }
-
 
   Future<void> fetchRooms() async {
     try {
@@ -81,26 +78,26 @@ class _ViewRoomState extends State<ViewRoom> {
             'description': doc.data['RoomDescription'],
             'category': doc.data['RoomCategory'],
             'price': doc.data['price'],
-            'image': doc.data['ImageUrl'], // Ensure the URL is valid
-            'documentId': doc.$id, // Store document ID for deletion
+            'image': doc.data['ImageUrl'],
+            'documentId': doc.$id,
           });
         }
-        filteredRooms = rooms; // Initialize filtered rooms
-        isLoading = false; // Set isLoading to false after data is fetched
+        filteredRooms = rooms;
+        isLoading = false;
       });
     } catch (e) {
       print('Error fetching rooms: $e');
       setState(() {
-        isLoading = false; // Set isLoading to false in case of an error
+        isLoading = false;
       });
     }
   }
 
   Future<void> _reloadRooms() async {
     setState(() {
-      isLoading = true; // Set loading state to true
+      isLoading = true;
     });
-    await fetchRooms(); // Reload data
+    await fetchRooms();
   }
 
   @override
@@ -118,8 +115,8 @@ class _ViewRoomState extends State<ViewRoom> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh), // Reload icon
-            onPressed: _reloadRooms, // Call reload function
+            icon: Icon(Icons.refresh),
+            onPressed: _reloadRooms,
           ),
         ],
       ),
@@ -163,7 +160,6 @@ class _ViewRoomState extends State<ViewRoom> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // First Column: Room details
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,10 +200,8 @@ class _ViewRoomState extends State<ViewRoom> {
                                         Icons.free_breakfast,
                                         color: Colors.green,
                                         size: 16,
-                                      ), // Breakfast icon
-                                      SizedBox(
-                                          width:
-                                              8), // Space between icon and text
+                                      ),
+                                      SizedBox(width: 8),
                                       Text(
                                         'Breakfast included',
                                         style: TextStyle(
@@ -223,10 +217,8 @@ class _ViewRoomState extends State<ViewRoom> {
                                         Icons.bathtub,
                                         color: Colors.green,
                                         size: 16,
-                                      ), // Bathroom icon
-                                      SizedBox(
-                                          width:
-                                              8), // Space between icon and text
+                                      ),
+                                      SizedBox(width: 8),
                                       Text(
                                         'Private Bathroom',
                                         style: TextStyle(
@@ -242,10 +234,8 @@ class _ViewRoomState extends State<ViewRoom> {
                                         Icons.wifi,
                                         color: Colors.green,
                                         size: 16,
-                                      ), // WiFi icon
-                                      SizedBox(
-                                          width:
-                                              8), // Space between icon and text
+                                      ),
+                                      SizedBox(width: 8),
                                       Text(
                                         'Free WiFi',
                                         style: TextStyle(
@@ -283,7 +273,6 @@ class _ViewRoomState extends State<ViewRoom> {
                                 ],
                               ),
                             ),
-                            // Second Column: Edit and Delete buttons
                             Column(
                               children: [
                                 Row(
@@ -302,7 +291,7 @@ class _ViewRoomState extends State<ViewRoom> {
                                           ),
                                         );
                                         if (result == true) {
-                                          _reloadRooms(); // Reload rooms after editing
+                                          _reloadRooms();
                                         }
                                       },
                                     ),
@@ -319,7 +308,7 @@ class _ViewRoomState extends State<ViewRoom> {
                                           ),
                                         );
                                         if (result == true) {
-                                          _reloadRooms(); // Reload rooms after deletion
+                                          _reloadRooms();
                                         }
                                       },
                                     ),

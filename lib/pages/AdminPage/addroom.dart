@@ -62,13 +62,12 @@ class _AddRoom extends State<AddRoom> {
       return;
     }
 
-    // Check if the room number is already taken
     try {
       final existingRooms = await database.listDocuments(
-        databaseId: '67650e170015d7a01bc8', // Replace with your database ID
-        collectionId: '6784c4dd00332fc62aeb', // Replace with your collection ID
+        databaseId: '67650e170015d7a01bc8',
+        collectionId: '6784c4dd00332fc62aeb',
         queries: [
-          Query.equal('RoomNumber', roomNumber.text), // Correct query syntax
+          Query.equal('RoomNumber', roomNumber.text),
         ],
       );
 
@@ -81,33 +80,30 @@ class _AddRoom extends State<AddRoom> {
       }
 
       setState(() {
-        roomNumberError = null; // Clear error message if valid
+        roomNumberError = null;
       });
 
       final String fileId = ID.unique();
 
       try {
-        // Upload the file to Appwrite Storage
         models.File uploadedFile = await storage.createFile(
-          bucketId:
-              '6784cf9d002262613d60', // Replace with your storage bucket ID
+          bucketId: '6784cf9d002262613d60',
           fileId: fileId,
           file: InputFile.fromPath(path: _image!.path),
         );
 
         try {
           await database.createDocument(
-            databaseId: '67650e170015d7a01bc8', // Your actual database ID
-            collectionId: '6784c4dd00332fc62aeb', // Your actual collection ID
-            documentId: ID.unique(), // Generate a unique ID for the document
+            databaseId: '67650e170015d7a01bc8',
+            collectionId: '6784c4dd00332fc62aeb',
+            documentId: ID.unique(),
             data: {
               'RoomNumber': roomNumber.text,
               'RoomName': roomName.text,
               'RoomDescription': roomDescription.text,
               'RoomCategory': roomCategory.text,
-              'price': double.tryParse(roomPrice.text) ??
-                  0.0, // Convert price to double
-              'ImageUrl': fileId, // Store image file ID
+              'price': double.tryParse(roomPrice.text) ?? 0.0,
+              'ImageUrl': fileId,
             },
           );
           ScaffoldMessenger.of(context).showSnackBar(
@@ -158,7 +154,7 @@ class _AddRoom extends State<AddRoom> {
             TextFormField(
               controller: roomNumber,
               keyboardType: TextInputType.number,
-              readOnly: true, // Prevents manual editing
+              readOnly: true,
               decoration: InputDecoration(
                 hintText: 'Room number eg. 1001',
                 hintStyle: TextStyle(color: Color(0xFFA2A2A2)),
@@ -185,8 +181,7 @@ class _AddRoom extends State<AddRoom> {
                         setState(() {
                           selectedValue = newValue;
                           roomNumber.text = newValue != null ? '$newValue' : '';
-                          roomNumberError =
-                              null; // Clear error when selecting a prefix
+                          roomNumberError = null;
                         });
                       },
                     ),
@@ -242,12 +237,11 @@ class _AddRoom extends State<AddRoom> {
                 setState(() {
                   if (result != null && result.length >= 2) {
                     roomNumber.text = '$selectedValue$result';
-                    roomNumberError = null; // Clear error on valid input
+                    roomNumberError = null;
                   } else {
                     roomNumberError =
                         "Room number must have at least 2 digits after the prefix.";
-                    roomNumber.text =
-                        ''; // Reset room number if invalid input is given
+                    roomNumber.text = '';
                   }
                 });
               },

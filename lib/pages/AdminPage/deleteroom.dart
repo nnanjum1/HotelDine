@@ -19,7 +19,7 @@ class _DeleteRoomState extends State<DeleteRoom> {
   final String collectionId = '6784c4dd00332fc62aeb';
 
   Map<String, dynamic>? roomData; // Holds room details
-  bool isLoading = true; // Tracks loading state
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -28,7 +28,6 @@ class _DeleteRoomState extends State<DeleteRoom> {
     fetchRoomData();
   }
 
-  // Initialize Appwrite Client
   void initializeAppwrite() {
     client = Client();
     client
@@ -37,7 +36,6 @@ class _DeleteRoomState extends State<DeleteRoom> {
     databases = Databases(client);
   }
 
-  // Fetch room data by room number
   Future<void> fetchRoomData() async {
     try {
       DocumentList documentList = await databases.listDocuments(
@@ -67,7 +65,6 @@ class _DeleteRoomState extends State<DeleteRoom> {
     }
   }
 
-  // Delete room data from the database
   Future<void> deleteRoom() async {
     try {
       String documentId = roomData!['\$id']; // Document ID
@@ -82,7 +79,7 @@ class _DeleteRoomState extends State<DeleteRoom> {
         const SnackBar(content: Text('Room deleted successfully!')),
       );
 
-      Navigator.of(context).pop(true); // Return success to the previous screen
+      Navigator.of(context).pop(true);
     } catch (e) {
       print('Error deleting room: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -91,7 +88,6 @@ class _DeleteRoomState extends State<DeleteRoom> {
     }
   }
 
-  // Show confirmation dialog before deleting
   void showDeleteConfirmation() {
     showDialog(
       context: context,
@@ -102,13 +98,13 @@ class _DeleteRoomState extends State<DeleteRoom> {
               'Are you sure you want to delete room #${widget.roomNumber}? This action cannot be undone.'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(), // Close dialog
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                deleteRoom(); // Proceed with deletion
+                Navigator.of(context).pop();
+                deleteRoom();
               },
               child: const Text(
                 'Delete',
@@ -142,13 +138,12 @@ class _DeleteRoomState extends State<DeleteRoom> {
                         color: Color(0xFFCFDFEF),
                         margin: const EdgeInsets.all(8.0),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(15.0), // Rounded edges
+                          borderRadius: BorderRadius.circular(15.0),
                         ),
                         elevation: 4,
                         // Shadow
                         child: Padding(
-                          padding: const EdgeInsets.all(20.0), // Inner padding
+                          padding: const EdgeInsets.all(20.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -188,8 +183,7 @@ class _DeleteRoomState extends State<DeleteRoom> {
                       ),
                       const SizedBox(height: 25),
                       SizedBox(
-                        width: double
-                            .infinity, // Ensures the button matches the card's width
+                        width: double.infinity,
                         child: ElevatedButton(
                           onPressed: showDeleteConfirmation,
                           style: ElevatedButton.styleFrom(

@@ -23,26 +23,22 @@ class _SignupState extends State<Signup> {
   bool _obscureConfirmPassword = true;
   String? emailErrorMessage;
 
-  // Sign-up function
   void signUp() async {
     try {
-      // Firebase Authentication signup
       final credential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: userEmail.text.toLowerCase(), // Make email lowercase
+        email: userEmail.text.toLowerCase(),
         password: userPassword.text,
       );
 
       if (credential.user != null) {
-        // Send email verification link
         await credential.user!.sendEmailVerification();
 
-        // Appwrite: Insert user details into the "Users" collection
         final userCollection = databaseService.getCollection('Users');
         await userCollection['create'](
           payload: {
             'fullName': fullNameControl.text,
-            'email': userEmail.text.toLowerCase(), // Save email in lowercase
+            'email': userEmail.text.toLowerCase(),
             'phone': phoneNumber.text,
             'dob': dobController.text,
           },
@@ -66,7 +62,6 @@ class _SignupState extends State<Signup> {
               ? 'The account already exists for that email.'
               : e.message ?? 'An error occurred';
 
-      // Set the email error message if the error is related to the email already being in use
       if (e.code == 'email-already-in-use') {
         setState(() {
           emailErrorMessage = 'The email is already exists.';
@@ -85,7 +80,6 @@ class _SignupState extends State<Signup> {
     }
   }
 
-  // Custom input decoration for form fields
   InputDecoration customInputDecoration(String hint, IconData icon) {
     return InputDecoration(
       filled: true,
@@ -147,7 +141,8 @@ class _SignupState extends State<Signup> {
                         return 'Please enter an email';
                       }
                       // Regex to validate email format and ensure lowercase letters only
-                      if (!RegExp(r'^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$')
+                      if (!RegExp(
+                              r'^[a-z0-9._%+-]+@(gmail|yahoo|outlook)\.com$')
                           .hasMatch(value)) {
                         return 'Please enter a valid email address in lowercase';
                       }

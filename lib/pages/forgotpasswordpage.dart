@@ -13,7 +13,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final TextEditingController emailController = TextEditingController();
   bool isLoading = false;
 
-  // Function to handle password reset
   Future<void> resetPassword() async {
     String email = emailController.text.trim();
 
@@ -29,7 +28,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       Fluttertoast.showToast(msg: 'Password reset email sent');
-      Navigator.pop(context);  // Navigate back to login page after sending reset email
+      Navigator.pop(context);
     } catch (e) {
       Fluttertoast.showToast(msg: 'Error: ${e.toString()}');
     } finally {
@@ -67,12 +66,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ),
             const SizedBox(height: 30),
             SizedBox(
-              width: 316, // Set the width to the desired value
+              width: 316,
               child: ElevatedButton(
                 onPressed: isLoading ? null : resetPassword,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric( vertical: 8),
+                  padding: EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -80,9 +79,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 child: isLoading
                     ? const CircularProgressIndicator() // Show loading spinner
                     : const Text(
-                  'Reset Password',
-                  style: TextStyle(fontSize: 16, color: Colors.white), // Customize text style
-                ),
+                        'Reset Password',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
               ),
             ),
           ],
